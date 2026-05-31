@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
-    "target": "ES2017",
     "lib": [
       "dom",
       "dom.iterable",
@@ -16,8 +14,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "baseUrl": ".",
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
@@ -25,21 +22,11 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/components/*": [
-        "./components/*"
-      ],
-      "@/models/*": [
-        "./models/*"
-      ],
-      "@/lib/*": [
-        "./lib/*"
-      ],
-      "@/app/api/*": [
-        "./app/api/*"
-      ]
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/models/*": ["./models/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/app/api/*": ["./app/api/*"]
     }
   },
   "include": [
