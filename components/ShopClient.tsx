@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingBag, Plus, ArrowLeft, CheckCircle2, SlidersHorizontal, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
+// ✅ IMPORT THE NEW BULLETPROOF HOOK
+import { useHydratedCart } from '@/store/cartStore'; 
 
 export default function ShopClient({ initialProducts }: { initialProducts: any[] }) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [cart, setCart] = useState<any[]>([]);
+  
+  // ✅ ZUSTAND TAKEOVER: No more manual localStorage or raw useState for cart!
+  const { items, addItem, _hasHydrated } = useHydratedCart();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("NEWEST");
@@ -22,18 +27,14 @@ export default function ShopClient({ initialProducts }: { initialProducts: any[]
     setTimeout(() => setToast(null), 3000);
   };
 
-  useEffect(() => {
-    setCart(JSON.parse(localStorage.getItem('luxury_cart') || '[]'));
-  }, []);
-
-  const availableBrands = useMemo(() => Array.from(new Set(initialProducts.map(p => p.brand).filter(Boolean))), [initialProducts]);
+  const availableBrands = useMemo(() => Array.from(new Set((initialProducts || []).map(p => p.brand).filter(Boolean))), [initialProducts]);
 
   const toggleFilter = (setState: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
     setState(prev => prev.includes(value) ? prev.filter(item => item !== value) : [...prev, value]);
   };
 
   const filteredAndSortedProducts = useMemo(() => {
-    let result = [...initialProducts];
+    let result = [...(initialProducts || [])];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => (p.name || p.title || "").toLowerCase().includes(q) || (p.brand || "").toLowerCase().includes(q));
@@ -46,14 +47,23 @@ export default function ShopClient({ initialProducts }: { initialProducts: any[]
     return result;
   }, [initialProducts, searchQuery, selectedBrands, sortBy]);
 
+  // ✅ CLEAN ADDTOCART: Zustand handles the logic, mapping, and DB sync securely
   const addToCart = (product: any, e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    const exists = cart.find(item => item._id === product._id);
-    const newCart = exists ? cart.map(i => i._id === product._id ? {...i, qty: i.qty+1} : i) : [...cart, {...product, qty: 1}];
-    setCart(newCart);
-    localStorage.setItem('luxury_cart', JSON.stringify(newCart));
+    e.preventDefault(); 
+    e.stopPropagation();
+    addItem(product);
     notify(`${product.name || product.title} added to Vault`);
   };
+
+  // 🚀 HYDRATION CHECK: Prevents React crash before Zustand loads
+  if (!_hasHydrated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F7F7]">
+         <div className="animate-pulse w-12 h-12 bg-black text-[#D4AF37] rounded-2xl flex items-center justify-center font-black text-xl mb-4">♞</div>
+         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500">Securing Vault...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] text-[#050505] font-sans pb-20">
@@ -89,9 +99,10 @@ export default function ShopClient({ initialProducts }: { initialProducts: any[]
           <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-[#D4AF37] transition-colors border border-gray-100">
             <ShoppingBag size={20} className="text-black" />
           </div>
-          {cart.length > 0 && (
+          {/* ✅ UPDATED to use items.length */}
+          {items.length > 0 && (
             <motion.span initial={{scale:0}} animate={{scale:1}} className="absolute -top-2 -right-2 bg-black text-[#D4AF37] w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">
-              {cart.length}
+              {items.length}
             </motion.span>
           )}
         </div>
@@ -115,16 +126,16 @@ export default function ShopClient({ initialProducts }: { initialProducts: any[]
              
              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2"><SlidersHorizontal size={14}/> Top Brands</h4>
              <div className="space-y-3">
-               {availableBrands.map(brand => (
+               {(availableBrands || []).map(brand => (
                  <button 
-                    key={brand} 
-                    onClick={() => toggleFilter(setSelectedBrands, brand)} 
+                    key={brand as string} 
+                    onClick={() => toggleFilter(setSelectedBrands, brand as string)} 
                     className="flex items-center gap-4 w-full group"
                  >
-                   <div className={`w-5 h-5 rounded-[6px] flex items-center justify-center border transition-all ${selectedBrands.includes(brand) ? 'bg-black border-black' : 'border-gray-300 group-hover:border-black bg-gray-50'}`}>
-                     {selectedBrands.includes(brand) && <CheckCircle2 size={14} className="text-[#D4AF37]" />}
+                   <div className={`w-5 h-5 rounded-[6px] flex items-center justify-center border transition-all ${selectedBrands.includes(brand as string) ? 'bg-black border-black' : 'border-gray-300 group-hover:border-black bg-gray-50'}`}>
+                     {selectedBrands.includes(brand as string) && <CheckCircle2 size={14} className="text-[#D4AF37]" />}
                    </div>
-                   <span className={`text-xs uppercase tracking-widest font-black transition-colors ${selectedBrands.includes(brand) ? 'text-black' : 'text-gray-500 group-hover:text-black'}`}>{brand}</span>
+                   <span className={`text-xs uppercase tracking-widest font-black transition-colors ${selectedBrands.includes(brand as string) ? 'text-black' : 'text-gray-500 group-hover:text-black'}`}>{brand as string}</span>
                  </button>
                ))}
              </div>
@@ -143,7 +154,8 @@ export default function ShopClient({ initialProducts }: { initialProducts: any[]
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-            {filteredAndSortedProducts.map((watch: any) => (
+            {/* ✅ ADDED Array Fallback: || [] */}
+            {(filteredAndSortedProducts || []).map((watch: any) => (
               <Link href={`/product/${watch._id}`} key={watch._id} className="group bg-white p-6 rounded-[2.5rem] border border-gray-100 hover:border-gray-300 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full relative">
                 
                 {/* Image Container with depth */}

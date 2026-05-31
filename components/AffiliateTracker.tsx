@@ -7,23 +7,14 @@ export default function AffiliateTracker() {
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        const refCode = searchParams.get('ref');
-        
+        // URL se ?ref=CODE dhoondho
+        const refCode = searchParams.get('ref') || searchParams.get('agent');
         if (refCode) {
-            const code = refCode.trim().toUpperCase();
-            const savedCode = localStorage.getItem('active_referral');
-
-            if (savedCode !== code) {
-                localStorage.setItem('active_referral', code);
-
-                fetch('/api/agents/track', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code })
-                }).catch(err => console.error("Tracking API failed", err));
-            }
+            // Browser mein lock kar do
+            localStorage.setItem('er_ref', refCode.toUpperCase());
+            console.log("🔥 Affiliate Link Locked in Browser:", refCode);
         }
     }, [searchParams]);
 
-    return null; 
+    return null; // Invisible component
 }

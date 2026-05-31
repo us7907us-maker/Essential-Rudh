@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb'; 
 import mongoose from 'mongoose';
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth';
 import User from '@/models/usertemp'; 
 
 // 🚀 THE GHOST KILLER: Next.js 15 Data Cache Bypass

@@ -30,8 +30,7 @@ import connectDB from '@/lib/mongodb';
 import WithdrawalRequest from '@/models/WithdrawalRequest';
 import User from '@/models/usertemp';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-
+import { authOptions } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 

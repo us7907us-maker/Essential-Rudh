@@ -1,82 +1,40 @@
+import { NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import { UserBehavior } from '@/models/UserBehavior';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from '@/lib/auth';
+import mongoose from 'mongoose'; // 🚀 CRITICAL: ID check karne ke liye zaroori hai
+
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'; 
-import connectDB from '@/lib/mongodb';
-import { UserBehavior } from '@/models/UserBehavior'; // 🚀 Naya model import kiya
 
-
-// GET: Frontend ko purani cart wapas dene ke liye
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ success: false, items: [] }, {
-                headers: { 
-                    'Cache-Control': 'no-store, max-age=0, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                }
-            });
+        
+        // Agar user login nahi hai, toh empty items bhej do (crash mat karo)
+        if (!session || !session.user) {
+            return NextResponse.json({ success: true, items: [] });
         }
 
         await connectDB();
-        // 🚀 FETCH FROM USER BEHAVIOR
-        const behavior: any = await UserBehavior.findOne({ userId: session.user.id }).lean();
 
+        // 🚀 THE MAGIC FIX: Check karo ki ID valid MongoDB format (24 characters) mein hai ya nahi
+        let behavior: any = null;
+        if (mongoose.Types.ObjectId.isValid(session.user.id)) {
+            behavior = await UserBehavior.findOne({ userId: session.user.id }).lean();
+        }
+
+        // Agar user ka behavior database mein nahi mila, toh empty cart return karo
         if (!behavior) {
-            return NextResponse.json({ success: true, items: [] }, {
-                headers: { 
-                    'Cache-Control': 'no-store, max-age=0, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                }
-            });
+            return NextResponse.json({ success: true, items: [] }, { status: 200 });
         }
 
-        // Return cartAbandons array
-        return NextResponse.json({ success: true, items: behavior.cartAbandons || [] }, {
-            headers: { 
-                'Cache-Control': 'no-store, max-age=0, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            } 
-        });
-    } catch (error) {
-        console.error("GET Cart Error:", error);
-        return NextResponse.json({ success: false, items: [] }, { status: 500 });
-    }
-}
-
-// POST: Frontend se naya data DB mein save karne ke liye
-export async function POST(req: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ success: false, message: "Login required" }, { status: 401 });
-        }
-
-        await connectDB();
-        const { items } = await req.json();
-        const userId = session.user.id;
-
-        // 🚀 SMART FIX: Agar behavior pehli baar ban raha hai toh sessionId dena zaroori hai
-        const fallbackSessionId = `user_${userId}`; 
-
-        await UserBehavior.findOneAndUpdate(
-            { userId: userId },
-            { 
-                $set: { cartAbandons: items || [] }, // Cart items update karo
-                $setOnInsert: { sessionId: fallbackSessionId } // Agar document nahi hai, toh ye session ID daal do
-            },
-            { new: true, upsert: true } 
-        );
-
-        return NextResponse.json({ success: true, message: "Cart synced to UserBehavior!" });
+        return NextResponse.json({ success: true, items: behavior.cart || [] }, { status: 200 });
 
     } catch (error: any) {
-        console.error("POST Cart Error:", error.message);
-        return NextResponse.json({ success: false, message: "Server Database Error" }, { status: 500 });
+        console.error("GET Cart Error:", error);
+        // Error aane par bhi API ko fail hone se roko
+        return NextResponse.json({ success: false, items: [] }, { status: 500 });
     }
 }

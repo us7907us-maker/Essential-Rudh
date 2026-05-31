@@ -25,6 +25,8 @@ async function connectDB() {
       serverSelectionTimeoutMS: 5000, 
     };
 
+    mongoose.set('strictQuery', false); // Fix for Mongoose v7+ strictQuery warnings
+
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });

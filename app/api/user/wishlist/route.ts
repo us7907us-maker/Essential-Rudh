@@ -1,177 +1,44 @@
+import { NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/usertemp'; // ⚠️ Apna sahi model name check kar lena
+import { getServerSession } from "next-auth/next";
+import { authOptions } from '@/lib/auth';
+import mongoose from 'mongoose';
+
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import mongoose from 'mongoose';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import User from '@/models/usertemp';
-
-// 🌟 BULLETPROOF DATABASE CONNECTION 🌟
-let isConnected = false;
-const connectDB = async () => {
-    if (isConnected || mongoose.connection.readyState >= 1) return;
-    try {
-        await mongoose.connect(process.env.MONGODB_URI as string, {
-            bufferCommands: true,
-            maxPoolSize: 10,
-        });
-        isConnected = true;
-    } catch (error) {
-        console.error("❌ DB Connection Error:", error);
-        throw new Error("Database connection failed!");
-    }
-};
-
-// GET: Fetch user's wishlist
 export async function GET(req: Request) {
     try {
-        await connectDB();
-        
-        // 🚨 FIREWALL: Verify user session
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: "Please sign in." }, { status: 401 });
+        
+        if (!session || !session.user) {
+            return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+        }
+
+        await connectDB();
+
+        // 🚀 THE FIX: Check if ID is Google OAuth or valid MongoDB ID
+        if (!mongoose.Types.ObjectId.isValid(session.user.id)) {
+            // Agar id Mongoose format ka nahi hai, toh seedha empty wishlist bhej do
+            return NextResponse.json({ success: true, wishlist: [] }, { status: 200 });
         }
 
         // 🚨 FIREWALL: Fetch user with populated wishlist
         const userRaw = await User.findById(session.user.id)
             .select('-password -__v')
             .populate({
-                path: 'wishlist',
-                select: 'name price imageUrl brand _id'
-            })
-            .lean();
+                path: 'wishlist'
+            }).lean();
 
-        if (!userRaw || Array.isArray(userRaw)) {
+        if (!userRaw) {
             return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
         }
-        const user = userRaw as { wishlist?: unknown[] };
 
-        return NextResponse.json({
-            success: true,
-            data: {
-                wishlist: user.wishlist || []
-            }
-        });
+        return NextResponse.json({ success: true, wishlist: (userRaw as any).wishlist || [] }, { status: 200 });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Get Wishlist Error:", error);
-        return NextResponse.json({ 
-            success: false, 
-            error: "We could not load your wishlist." 
-        }, { status: 500 });
-    }
-}
-
-// POST: Add product to wishlist
-export async function POST(req: Request) {
-    try {
-        await connectDB();
-        
-        // 🚨 FIREWALL: Verify user session
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: "Please sign in." }, { status: 401 });
-        }
-
-        const { productId } = await req.json();
-
-        // 🛡️ INPUT VALIDATION
-        if (!productId || typeof productId !== 'string') {
-            return NextResponse.json({ success: false, error: "Pick a product first." }, { status: 400 });
-        }
-
-        // 🚨 FIREWALL: Check if product exists (optional but recommended)
-        const Product = mongoose.models.Product || mongoose.model('Product', new mongoose.Schema({}, { strict: false }));
-        const productRaw = await Product.findById(productId).select('_id').lean();
-        if (!productRaw || Array.isArray(productRaw)) {
-            return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
-        }
-
-        // 🚨 FIREWALL: Add to wishlist if not already present
-        const updatedUser = await User.findByIdAndUpdate(
-            session.user.id,
-            { 
-                $addToSet: { wishlist: productId }, // $addToSet prevents duplicates
-                $push: {
-                    notifications: {
-                        title: "💝 Added to Wishlist",
-                        desc: "A watch was added to your wishlist.",
-                        unread: true,
-                        time: new Date()
-                    }
-                }
-            },
-            { new: true }
-        ).select('-password -__v');
-
-        if (!updatedUser) {
-            return NextResponse.json({ success: false, error: "We could not add this to your wishlist." }, { status: 500 });
-        }
-
-        return NextResponse.json({
-            success: true,
-            message: "Saved to your wishlist.",
-            data: {
-                wishlist: updatedUser.wishlist || []
-            }
-        });
-
-    } catch (error) {
-        console.error("Add to Wishlist Error:", error);
-        return NextResponse.json({ 
-            success: false, 
-            error: "We could not add this to your wishlist." 
-        }, { status: 500 });
-    }
-}
-
-// DELETE: Remove product from wishlist
-export async function DELETE(req: Request) {
-    try {
-        await connectDB();
-        
-        // 🚨 FIREWALL: Verify user session
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ success: false, error: "Please sign in." }, { status: 401 });
-        }
-
-        const { productId } = await req.json();
-
-        // 🛡️ INPUT VALIDATION
-        if (!productId || typeof productId !== 'string') {
-            return NextResponse.json({ success: false, error: "Pick a product first." }, { status: 400 });
-        }
-
-        // 🚨 FIREWALL: Remove from wishlist
-        const updatedUser = await User.findByIdAndUpdate(
-            session.user.id,
-            { $pull: { wishlist: productId } },
-            { new: true }
-        ).select('-password -__v');
-
-        revalidatePath('/', 'layout');
-
-        if (!updatedUser) {
-            return NextResponse.json({ success: false, error: "We could not remove this from your wishlist." }, { status: 500 });
-        }
-
-        return NextResponse.json({
-            success: true,
-            message: "Removed from your wishlist.",
-            data: {
-                wishlist: updatedUser.wishlist || []
-            }
-        });
-
-    } catch (error) {
-        console.error("Remove from Wishlist Error:", error);
-        return NextResponse.json({ 
-            success: false, 
-            error: "We could not remove this from your wishlist." 
-        }, { status: 500 });
+        return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }

@@ -1,7 +1,7 @@
 import { ShieldCheck, ArrowLeft, Clock, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import  connectDB from '@/lib/db';
+import connectDB from '@/lib/mongodb';
 import mongoose from 'mongoose';
 
 // 🚀 CMS Schema for Legal Pages

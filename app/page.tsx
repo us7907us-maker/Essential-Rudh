@@ -9,6 +9,8 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
+// 🚀 ZUSTAND HOOK IMPORT KIYA
+import { useHydratedCart } from '@/store/cartStore'; 
 
 const LUXURY_BRANDS = ["ROLEX", "PATEK PHILIPPE", "AUDEMARS PIGUET", "RICHARD MILLE", "CARTIER", "OMEGA", "VACHERON CONSTANTIN"];
 const DEFAULT_GALLERY_IMAGES = [
@@ -19,7 +21,6 @@ const DEFAULT_GALLERY_IMAGES = [
   "https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?q=80&w=1000",
   "https://images.unsplash.com/photo-1547996160-81dfa63595dd?q=80&w=1000"
 ];
-
 const DEFAULT_PROMO_VIDEOS = [
     "https://cdn.pixabay.com/video/2020/05/24/40092-424840899_large.mp4", 
     "https://cdn.pixabay.com/video/2021/08/11/84687-587289569_large.mp4", 
@@ -31,17 +32,13 @@ const DEFAULT_PROMO_VIDEOS = [
 interface LuxuryToastProps {
     show: boolean;
     message: string;
-    type?: string; // 🚀 FIX: 'success' | 'error' ki jagah normal string kar diya
+    type?: string; 
 }
 
 interface HeroSlide {
-    type: string; // 🚀 FIX: 'video' | 'image' ki jagah normal string kar diya
+    type: string; 
     url: string;
     heading?: string;
-}
-
-interface HeroConfig {
-    heroSlides?: HeroSlide[];
 }
 
 // 🌟 PREMIUM TOAST COMPONENT
@@ -107,14 +104,8 @@ const CinematicBreak = ({ videoUrl, title }: { videoUrl?: string, title?: string
     );
 };
 
-
-
-interface HeroConfig {
-  heroSlides?: HeroSlide[];
-}
-
-// 🚨 HERO SECTION (VIDEO POSTER OPTIMIZATION)
-const Isolated4DHero = ({ config }: { config: HeroConfig }) => {
+// 🚨 HERO SECTION
+const Isolated4DHero = ({ config }: { config: any }) => {
   const heroRef = useRef(null);
   const router = useRouter();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -130,7 +121,7 @@ const Isolated4DHero = ({ config }: { config: HeroConfig }) => {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const smoothScroll = useSpring(scrollYProgress, { stiffness: 100, damping: 30, mass: 0.5 });
 
-  const textScale = useTransform(smoothScroll, [0, 0.8], [1, 1.3]); 
+  const textScale = useTransform(smoothScroll, [0, 0.8], [1, 1.3]);
   const textOpacity = useTransform(smoothScroll, [0, 0.6], [1, 0]);
   const videoScale = useTransform(smoothScroll, [0, 1], [1, 1.1]);
 
@@ -149,7 +140,6 @@ const Isolated4DHero = ({ config }: { config: HeroConfig }) => {
         className="relative h-[100vh] md:h-[120vh] w-full bg-black cursor-pointer overflow-hidden"
     >
       <div className="sticky top-0 h-screen w-full flex items-center justify-center">
-        
         <motion.div 
             style={{ scale: textScale, opacity: textOpacity }} 
             className="absolute z-30 text-center pointer-events-none w-full px-4"
@@ -181,7 +171,7 @@ const Isolated4DHero = ({ config }: { config: HeroConfig }) => {
                     src={currentSlide.url} 
                     className="w-full h-full object-cover opacity-70" 
                     alt={`Essential Rush Banner - Slide ${currentSlideIndex + 1}`}
-                 />
+                  />
               ) : (
                  <motion.video 
                    key={currentSlide?.url} 
@@ -206,7 +196,7 @@ const Isolated4DHero = ({ config }: { config: HeroConfig }) => {
 
         {slides.length > 1 && (
             <div className="absolute bottom-24 md:bottom-12 left-1/2 -translate-x-1/2 z-40 flex gap-4 bg-white/10 px-6 py-3 rounded-full backdrop-blur-md" onClick={(e)=>e.stopPropagation()}>
-                {slides.map((_: HeroSlide, i: number) => (
+                {slides.map((_: any, i: number) => (
                     <button 
                         key={i} 
                         onClick={() => setCurrentSlideIndex(i)} 
@@ -227,26 +217,31 @@ const FadeUp = ({ children, delay = 0, className = "" }: any) => (
 export default function Home() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  
+  // 🚀 ZUSTAND CART HOOK - AB PURANA STATE HATA DIYA
+  const { items, addItem, _hasHydrated } = useHydratedCart();
+
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 80]);
 
   const [activeCategory, setActiveCategory] = useState("ALL");
-  const [cart, setCart] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
-  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const [liveWatches, setLiveWatches] = useState<any[]>([]); 
   const [galleryImages, setGalleryImages] = useState<string[]>(DEFAULT_GALLERY_IMAGES); 
   const [promoVideos, setPromoVideos] = useState<string[]>(DEFAULT_PROMO_VIDEOS);
   const [config, setConfig] = useState<any>(null);
+
   const [liveCelebrities, setLiveCelebrities] = useState<any[]>([]);
   const [liveFaqs, setLiveFaqs] = useState<any[]>([]);
   const [flowingReviews, setFlowingReviews] = useState<any[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
+
   const [socialLinks, setSocialLinks] = useState<any>(null);
   const [corporateInfo, setCorporateInfo] = useState<any>(null);
   const [legalPages, setLegalPages] = useState<any[]>([]);
@@ -300,7 +295,7 @@ export default function Home() {
             if (celebData.data) setLiveCelebrities(celebData.data);
         }
         if(ai?.ok) { 
-           const res = await ai.json(); 
+           const res = await ai.json();
            setLiveWatches((res.data || []).sort((a:any, b:any) => (b.priority || 0) - (a.priority || 0)));
         }
         if(rev?.ok) {
@@ -313,11 +308,11 @@ export default function Home() {
            );
            setFlowingReviews([...finalLocal, ...pubRevs]);
         }
-        setCart(JSON.parse(localStorage.getItem('luxury_cart') || '[]'));
+        
         setIsDataLoading(false);
       } catch (e) { 
         console.error("Home Page Data Fetch Error:", e);
-        setIsDataLoading(false); 
+        setIsDataLoading(false);
       }
     };
     fetchPersonalizedData();
@@ -337,21 +332,18 @@ export default function Home() {
     return ["ALL", ...Array.from(new Set([...fetchedCats, ...aiCats]))];
   }, [liveWatches, config]);
 
- const filteredWatches = useMemo(() => {
+  const filteredWatches = useMemo(() => {
     return liveWatches.filter(w => {
       const catMatch = activeCategory === "ALL" || w.category === activeCategory;
-      
-      // 🚨 FIX: Made string methods completely safe from undefined crashes
       const safeName = w.name || "";
       const safeBrand = w.brand || "";
-      
       const searchMatch = safeName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           safeBrand.toLowerCase().includes(searchTerm.toLowerCase());
-                          
       return catMatch && searchMatch;
     });
   }, [liveWatches, activeCategory, searchTerm]);
 
+  // 🚀 ZUSTAND WALA ADDTOCART (KACHRA SAAF)
   const addToCart = async (product: any, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -362,25 +354,12 @@ export default function Home() {
         return;
     }
 
-    const exists = cart.find(item => item._id === product._id);
-    const newCart = exists ? cart.map(i => i._id === product._id ? {...i, qty: i.qty+1} : i) : [...cart, {...product, qty: 1}];
-    setCart(newCart);
-    localStorage.setItem('luxury_cart', JSON.stringify(newCart));
-    
-    showLuxuryToast(`${product.name} added to your collection.`, "success");
+    // Add to Zustand store (which auto-syncs with DB and LocalStorage)
+    addItem(product);
+    showLuxuryToast(`${product.name || product.title} added to your collection.`, "success");
 
+    // Send Abandoned Cart Lead (Optional tracking)
     try {
-        const cartTotal = newCart.reduce((total, item) => total + (Number(item.offerPrice || item.price) * item.qty), 0);
-        await fetch(`/api/cart/sync?t=${Date.now()}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                items: newCart,
-                totalAmount: cartTotal,
-                user: { name: session.user?.name, email: session.user?.email, phone: (session.user as any)?.phone || '' }
-            })
-        });
-
         if (session?.user?.email || (session.user as any)?.phone) {
             await fetch(`/api/cart/verify-lead?t=${Date.now()}`, {
                 method: 'POST',
@@ -389,13 +368,13 @@ export default function Home() {
                     name: session.user?.name || 'Guest',
                     email: session.user?.email || '',
                     phone: (session.user as any)?.phone || '',
-                    cartItems: newCart,
-                    cartTotal
+                    cartItems: [...items, product],
+                    cartTotal: [...items, product].reduce((total, item) => total + (Number(item.offerPrice || item.price) * (item.qty || item.quantity || 1)), 0)
                 })
             });
         }
     } catch (err) {
-        console.error("Cart sync failed");
+        console.error("Lead sync failed");
     }
   };
 
@@ -415,7 +394,7 @@ export default function Home() {
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (honeyPot.length > 0) return setReviewStatus('success'); 
+    if (honeyPot.length > 0) return setReviewStatus('success');
     if (!reviewForm.userName || !reviewForm.comment) return showLuxuryToast("Fill details.", "error");
 
     setReviewStatus('submitting');
@@ -477,6 +456,7 @@ export default function Home() {
                     </motion.div>
                 ))}
             </nav>
+           
             <div className="relative z-10 mt-auto border-t border-white/10 pt-8 flex justify-between items-center">
               <div className="flex gap-8">
                 <Instagram className="text-white/50 hover:text-[#D4AF37] cursor-pointer transition-colors" />
@@ -493,7 +473,7 @@ export default function Home() {
       {/* 🌟 REVIEW MODAL 🌟 */}
       <AnimatePresence>
         {isReviewModalOpen && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[1200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
+           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[1200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
             <motion.div initial={{scale:0.95}} animate={{scale:1}} className="bg-white p-8 md:p-12 rounded-[30px] w-full max-w-lg relative shadow-2xl">
                <button onClick={() => setIsReviewModalOpen(false)} className="absolute top-4 right-4 bg-gray-100 text-gray-500 rounded-full p-2 hover:bg-black hover:text-white transition-all"><X size={20}/></button>
                {reviewStatus === 'success' ? (
@@ -503,28 +483,19 @@ export default function Home() {
                        <h3 className="text-2xl font-serif font-bold text-black mb-6">Write a Review</h3>
                        <div className="space-y-4">
                            <div><label className="text-xs font-bold text-gray-500 mb-1 block">Name</label><input value={reviewForm.userName} onChange={e=>setReviewForm({...reviewForm, userName: e.target.value})} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm outline-none focus:border-black" placeholder="John Doe"/></div>
+                         
                            <div><label className="text-xs font-bold text-gray-500 mb-1 block">Rating</label><div className="flex gap-2">{[1,2,3,4,5].map(star => (<button key={star} onClick={() => setReviewForm({...reviewForm, rating: star})} className={`transition-transform hover:scale-110 ${reviewForm.rating >= star ? 'text-black' : 'text-gray-200'}`}><Star size={28} fill={reviewForm.rating >= star ? "currentColor" : "none"} /></button>))}</div></div>
                            <div><label className="text-xs font-bold text-gray-500 mb-1 block">Review</label><textarea value={reviewForm.comment} onChange={e=>setReviewForm({...reviewForm, comment: e.target.value})} rows={3} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm outline-none focus:border-black custom-scrollbar" placeholder="What do you think?"/></div>
                            <div className="border-t border-gray-100 pt-4">
                                <label className="text-xs font-bold text-gray-500 mb-2 flex items-center gap-2"><Camera size={14}/> Add Photo/Video</label>
                                <div className="flex flex-wrap gap-4">
+                                 
                                    {reviewMedia.map((url: string, idx: number) => (
                                        <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 group">
                                            {url.match(/\.(mp4|webm|mov)$/i) ? 
-                    <video 
-                        src={url} 
-                        className="w-full h-full object-cover" 
-                        playsInline
-                        preload="none"
-                        muted
-                        aria-label={`Review media ${idx + 1}`}
-                    /> : 
-                    <img 
-                        src={url} 
-                        className="w-full h-full object-cover" 
-                        alt={`Review media ${idx + 1}`}
-                    />
-                }
+                                              <video src={url} className="w-full h-full object-cover" playsInline preload="none" muted aria-label={`Review media ${idx + 1}`}/> : 
+                                              <img src={url} className="w-full h-full object-cover" alt={`Review media ${idx + 1}`}/>
+                                           }
                                            <button onClick={()=>setReviewMedia(reviewMedia.filter(x => x !== url))} className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center"><Trash2 size={14}/></button>
                                        </div>
                                    ))}
@@ -569,7 +540,8 @@ export default function Home() {
             </Link>
             <div className="relative cursor-pointer group p-2" onClick={() => router.push('/checkout')}>
               <ShoppingBag size={20} className={`transition-transform duration-300 group-hover:scale-110 ${isScrolled ? 'text-black' : 'text-white'}`}/>
-              {cart.length > 0 && <span className="absolute top-0 right-0 bg-black text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-md border border-white">{cart.length}</span>}
+              {/* 🚀 ZUSTAND ITEMS LENGTH HAIN YAHAN */}
+              {_hasHydrated && items.length > 0 && <span className="absolute top-0 right-0 bg-black text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-md border border-white">{items.length}</span>}
             </div>
           </div>
         </div>
@@ -585,7 +557,7 @@ export default function Home() {
           <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ ease: "linear", duration: 30, repeat: Infinity }} className="flex gap-12 md:gap-24 items-center px-10 will-change-transform">
             {dynamicBrands.concat(dynamicBrands).map((b: any, i: number) => (
               <div key={`brand-${i}`} className="flex items-center gap-6 group cursor-default">
-                 <span className="text-xl md:text-3xl font-serif italic tracking-tighter whitespace-nowrap text-gray-300 group-hover:text-black transition-colors duration-500">{b}</span>
+                  <span className="text-xl md:text-3xl font-serif italic tracking-tighter whitespace-nowrap text-gray-300 group-hover:text-black transition-colors duration-500">{b}</span>
               </div>
             ))}
           </motion.div>
@@ -613,7 +585,6 @@ export default function Home() {
 
          <div className="relative z-10 w-full overflow-x-auto custom-scrollbar snap-x snap-mandatory scroll-pl-6 md:scroll-pl-16 pb-10">
              <div className="flex gap-6 md:gap-8 px-6 md:px-16 w-max">
-                 {/* ⚡ SPEED TRICK: SKELETONS FOR NEW ARRIVALS */}
                  {isDataLoading ? (
                      Array.from({ length: 4 }).map((_, i) => (
                          <div key={`skel-${i}`} className="w-[260px] md:w-[340px] shrink-0 snap-start bg-white/95 backdrop-blur-md rounded-[20px] p-6 border border-gray-200 shadow-sm animate-pulse flex flex-col">
@@ -631,7 +602,6 @@ export default function Home() {
                          <div key={`horiz-${i}`} onClick={()=>router.push(`/product/${watch.slug || watch._id}`)} className="w-[260px] md:w-[340px] shrink-0 snap-start bg-white/95 backdrop-blur-md rounded-[20px] p-6 border border-gray-200 group hover:border-black hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col will-change-transform shadow-lg">
                             <div className="h-56 md:h-72 bg-gray-50/50 rounded-2xl mb-6 p-6 flex items-center justify-center relative overflow-hidden">
                                 {watch.badge && <span className="absolute top-3 left-3 bg-black text-white text-[9px] font-bold uppercase px-3 py-1 rounded-full z-10 shadow-sm">{watch.badge}</span>}
-                                {/* ⚡ SPEED TRICK: Fetch priority on top watches */}
                                 <img 
                                     src={watch.imageUrl || (watch.images && watch.images[0])} 
                                     className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700" 
@@ -645,7 +615,7 @@ export default function Home() {
                             <div className="mt-auto flex justify-between items-center border-t border-gray-100 pt-4">
                                 <p className="font-bold text-lg md:text-xl text-black">₹{Number(watch.offerPrice || watch.price).toLocaleString()}</p>
                                 <button onClick={(e) => addToCart(watch, e)} className="p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-all active:scale-95 shadow-md">
-                                    <Plus size={16}/>
+                                  <Plus size={16}/>
                                 </button>
                             </div>
                          </div>
@@ -685,7 +655,6 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
-             {/* ⚡ SPEED TRICK: SKELETONS FOR SHOP GRID */}
              {isDataLoading ? (
                  Array.from({ length: 8 }).map((_, i) => (
                      <div key={`shop-skel-${i}`} className="bg-white/90 p-4 md:p-6 rounded-[20px] border border-gray-200 h-full flex flex-col animate-pulse">
@@ -800,14 +769,14 @@ export default function Home() {
       {/* 🌟 BRAND AMBASSADORS 🌟 */}
       <section className="py-24 md:py-40 bg-white text-black border-t border-gray-100 relative overflow-hidden">
         <div className="absolute top-1/4 left-0 w-full overflow-hidden opacity-[0.02] pointer-events-none z-0 flex whitespace-nowrap will-change-transform">
-            <motion.h2 animate={{ x: ["0%", "-50%"] }} transition={{ ease: "linear", duration: 50, repeat: Infinity }} className="text-[100px] md:text-[250px] font-serif italic text-black font-black">
+             <motion.h2 animate={{ x: ["0%", "-50%"] }} transition={{ ease: "linear", duration: 50, repeat: Infinity }} className="text-[100px] md:text-[250px] font-serif italic text-black font-black">
                 TRUSTED BY MANY • MODERN STYLES • TRUSTED BY MANY • 
             </motion.h2>
         </div>
 
         <div className="max-w-[1600px] mx-auto px-4 md:px-10 relative z-10 mb-20 text-center">
             <FadeUp>
-                <p className="text-gray-500 uppercase tracking-[15px] text-[10px] font-bold mb-6">WORN BY LEADERS</p>
+                 <p className="text-gray-500 uppercase tracking-[15px] text-[10px] font-bold mb-6">WORN BY LEADERS</p>
                 <h2 className="text-5xl md:text-[100px] font-serif text-black tracking-tight leading-none font-bold">Trusted Faces.</h2>
             </FadeUp>
         </div>
@@ -822,7 +791,7 @@ export default function Home() {
                         [1, 2, 3, 4, 5].map((_, i) => <div key={i} className="w-[240px] md:w-[350px] aspect-[3/4] bg-gray-100 rounded-[30px] animate-pulse"></div>)
                     ) : (
                         Array(4).fill(liveCelebrities).flat().map((celeb: any, i: number) => (
-                            <div key={`${celeb._id}-${i}`} className="w-[240px] md:w-[380px] aspect-[3/4] relative group rounded-[30px] overflow-hidden shrink-0 shadow-lg cursor-pointer">
+                           <div key={`${celeb._id}-${i}`} className="w-[240px] md:w-[380px] aspect-[3/4] relative group rounded-[30px] overflow-hidden shrink-0 shadow-lg cursor-pointer">
                                 {(celeb.imageUrl || celeb.img) && <img src={celeb.imageUrl || celeb.img} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-[1s] relative z-10" alt={celeb.name} />}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-8 flex flex-col justify-end z-20">
                                     <h4 className="text-white text-3xl font-serif mb-1 font-bold">{celeb.name}</h4>
@@ -830,17 +799,17 @@ export default function Home() {
                                 </div>
                             </div>
                         ))
-                    )}
+                     )}
                 </motion.div>
             </div>
         </div>
       </section>
 
- {/* 🌟 REVIEWS 🌟 */}
+      {/* 🌟 REVIEWS 🌟 */}
       <section id="reviews" className="py-24 md:py-40 relative overflow-hidden border-t border-gray-200">
           {promoVideos[4] && (
               <div className="absolute inset-0 z-0">
-                 <video src={promoVideos[4]} autoPlay loop muted playsInline preload="none" className="w-full h-full object-cover opacity-80" />
+                  <video src={promoVideos[4]} autoPlay loop muted playsInline preload="none" className="w-full h-full object-cover opacity-80" />
                  <div className="absolute inset-0 bg-white/90 backdrop-blur-xl"></div>
               </div>
           )}
@@ -852,13 +821,13 @@ export default function Home() {
              </button>
           </div>
           {flowingReviews.length > 0 && (
-              <div className="flex w-[300%] md:w-[200%] relative z-10">
+               <div className="flex w-[300%] md:w-[200%] relative z-10">
                 <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ ease: "linear", duration: 40, repeat: Infinity }} className="flex gap-6 md:gap-10 items-stretch px-10 will-change-transform hover:[animation-play-state:paused]">
                     {flowingReviews.concat(flowingReviews).map((rev: any, i: number) => (
                         <div key={i} className="flex-shrink-0 w-[300px] md:w-[450px] bg-white/80 backdrop-blur-md border border-white p-8 md:p-12 rounded-[40px] flex flex-col justify-between shadow-lg hover:bg-white hover:shadow-2xl transition-all duration-500">
                             <div>
                                 <div className="flex justify-between items-start mb-6">
-                                    <div><p className="font-serif text-2xl font-bold mb-1 text-black">{rev.userName}</p><p className="text-[9px] text-gray-500 font-bold uppercase tracking-[2px]">Verified Buyer</p></div>
+                                     <div><p className="font-serif text-2xl font-bold mb-1 text-black">{rev.userName}</p><p className="text-[9px] text-gray-500 font-bold uppercase tracking-[2px]">Verified Buyer</p></div>
                                     <ShieldCheck size={24} className="text-green-600"/>
                                 </div>
                                 <div className="flex gap-1 text-black mb-6">
@@ -866,15 +835,15 @@ export default function Home() {
                                 </div>
                                 <p className="text-gray-700 font-serif text-lg leading-relaxed line-clamp-4">"{rev.comment}"</p>
                                 {rev.media && rev.media.length > 0 && (
-                                    <div className="flex gap-3 overflow-x-auto pt-6 mt-6 border-t border-gray-200">
+                                     <div className="flex gap-3 overflow-x-auto pt-6 mt-6 border-t border-gray-200">
                                         {rev.media.map((mediaUrl: string, mIdx: number) => (
-                                            mediaUrl.match(/\.(mp4|webm|mov)$/i) ? <video key={mIdx} src={mediaUrl} playsInline preload="none" muted className="h-16 w-16 object-cover rounded-xl border border-gray-200 shrink-0" /> : <img key={mIdx} src={mediaUrl} className="h-16 w-16 object-cover rounded-xl border border-gray-200 shrink-0" />
+                                             mediaUrl.match(/\.(mp4|webm|mov)$/i) ? <video key={mIdx} src={mediaUrl} playsInline preload="none" muted className="h-16 w-16 object-cover rounded-xl border border-gray-200 shrink-0" /> : <img key={mIdx} src={mediaUrl} className="h-16 w-16 object-cover rounded-xl border border-gray-200 shrink-0" />
                                         ))}
-                                    </div>
+                                     </div>
                                 )}
                             </div>
                         </div>
-                    ))}
+                     ))}
                 </motion.div>
               </div>
           )}
@@ -902,7 +871,7 @@ export default function Home() {
                 </div>
               ))}
            </div>
-        </div>
+         </div>
       </section>
 
       {/* 🌟 FOOTER 🌟 */}

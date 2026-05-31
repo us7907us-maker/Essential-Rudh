@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Lead from "@/models/Lead";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth';
 import User from "@/models/usertemp";
 
 export async function POST(req: Request) {

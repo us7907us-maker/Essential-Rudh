@@ -13,7 +13,8 @@ export async function GET() {
         const Order = mongoose.models.Order || mongoose.model('Order', new mongoose.Schema({}, { strict: false }));
         
         // Fetch ONLY real orders
-        const allOrders = await Order.find({ status: { $nin: ['CANCELLED', 'PENDING'] } });
+// Ab sirf 'CANCELLED' orders hide honge, baaki saare naye orders (Pending) turant dikhenge
+const allOrders = await Order.find({ status: { $ne: 'CANCELLED' } });
         const totalRevenue = allOrders.reduce((sum, order) => sum + (Number(order.totalAmount) || 0), 0);
 
         return NextResponse.json({

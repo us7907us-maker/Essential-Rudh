@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import  connectDB  from "@/lib/mongodb"; // Aapka standard db connection import
 import { HomepageSection, ActivityLog } from "@/models/Enterprise";
 import { NextResponse } from "next/server";

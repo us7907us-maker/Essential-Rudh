@@ -1,9 +1,10 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Product } from '@/models/Product';
 import { UserBehavior } from '@/models/UserBehavior';
-
-export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {

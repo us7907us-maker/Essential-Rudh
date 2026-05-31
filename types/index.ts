@@ -91,8 +91,8 @@ declare module "next-auth" {
       phone?: string;
       image?: string | null;
       role: string;
-      myReferralCode?: string;
-      walletPoints: number;
+      myReferral?: string;
+      walletBalance: number;
       loyaltyTier: string;
     };
   }
@@ -103,8 +103,8 @@ declare module "next-auth" {
     email?: string;
     phone?: string;
     role: string;
-    myReferralCode?: string;
-    walletPoints: number;
+    myReferral?: string;
+    walletBalance: number;
     loyaltyTier: string;
   }
 }
@@ -114,8 +114,8 @@ declare module "next-auth/jwt" {
     id: string;
     role: string;
     phone?: string;
-    myReferralCode?: string;
-    walletPoints: number;
+    myReferral?: string;
+    walletBalance: number;
     loyaltyTier: string;
   }
 }

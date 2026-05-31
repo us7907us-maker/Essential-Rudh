@@ -16,7 +16,8 @@ interface InventoryProps {
     handleSaveProduct: () => void;
     liveWatches: any[];
     handleDeleteProduct: (id: string) => void;
-    PremiumUploadNode: React.ComponentType<{ placeholder?: string; onUploadSuccess: (url: string) => void }>;
+    PremiumUploadNode: React.ComponentType<{ placeholder?: string; onUploadSuccess: (url: string) => void; onUploadStateChange?: (state: boolean) => void }>;
+    setIsImageUploading: (val: boolean) => void; // 🚀 FIX: Connect to parent lock state
 }
 
 export default function Inventory({
@@ -30,6 +31,7 @@ export default function Inventory({
     liveWatches,
     handleDeleteProduct,
     PremiumUploadNode,
+    setIsImageUploading,
 }: InventoryProps) {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="inv" className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -95,6 +97,7 @@ export default function Inventory({
                                         <PremiumUploadNode
                                             placeholder="Main Image"
                                             onUploadSuccess={(url: string) => setWatchForm({ ...watchForm, imageUrl: url })}
+                                            onUploadStateChange={setIsImageUploading} // 🚀 FIX: Connect to lock
                                         />
                                     </div>
                                 </div>

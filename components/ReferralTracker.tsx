@@ -1,24 +1,20 @@
 "use client";
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+
+import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function ReferralTracker() {
-  const searchParams = useSearchParams();
+    const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const ref = searchParams.get("ref"); // URL se ?ref=amit nikalo
-    
-    if (ref) {
-      // 1. Browser mein save kar lo (taaki checkout tak yaad rahe)
-      localStorage.setItem("staff_ref", ref);
+    useEffect(() => {
+        // URL se ?ref=CODE ya ?agent=CODE dhoondho
+        const refCode = searchParams.get('ref') || searchParams.get('agent');
+        if (refCode) {
+            // Code mila? Usko browser (localStorage) mein chup-chaap save kar do!
+            localStorage.setItem('er_ref', refCode.toUpperCase());
+            console.log("🔥 System Secured: Referral Code Locked ->", refCode);
+        }
+    }, [searchParams]);
 
-      // 2. Server ko batao ki ek visitor aaya hai
-      fetch("/api/staff/track-visit", {
-        method: "POST",
-        body: JSON.stringify({ refCode: ref }),
-      });
-    }
-  }, [searchParams]);
-
-  return null; // Ye screen par kuch nahi dikhayega
+    return null; // Ye screen par kuch nahi dikhayega
 }

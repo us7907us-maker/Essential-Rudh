@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth';
 import { revalidatePath } from 'next/cache'; // 🚀 Import cache revalidator
-
-const connectDB = async () => {
-    if (mongoose.connection.readyState >= 1) return;
-    await mongoose.connect(process.env.MONGODB_URI as string);
-};
+import connectDB from "@/lib/mongodb";
 
 const CmsSchema = new mongoose.Schema({
     heroSlides: Array,

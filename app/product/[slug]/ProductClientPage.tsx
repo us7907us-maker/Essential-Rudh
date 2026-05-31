@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/context/ToastContext'; 
+import { useHydratedCart } from '@/store/cartStore';
 import { optimizeImage } from '@/utils/optimizeimage';
 import Product3DViewer from '@/components/Product3D'; 
 
@@ -174,7 +175,10 @@ export default function ProductClientPage({ initialProduct, slug }: { initialPro
         const sessionId = localStorage.getItem('er_session');
         fetch('/api/ai/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, action: 'CART', productId: product._id, category: product.category }) }).catch(()=>{});
 
-        const newCart = [...cart, { ...product, qty: 1 }];
+        // 🚀 THE FIX: Handle cases where cart might be undefined/not iterable
+        const currentCart = Array.isArray(cart) ? cart : [];
+        const newCart = [...currentCart, { ...product, qty: 1 }];
+
         setCart(newCart); 
         localStorage.setItem('luxury_cart', JSON.stringify(newCart)); 
         
@@ -340,7 +344,7 @@ export default function ProductClientPage({ initialProduct, slug }: { initialPro
                             <option value="EUR">€ EUR</option>
                             <option value="GBP">£ GBP</option>
                         </select>
-                        )
+                        
                     </div>
 
                     <div className="space-y-4 mb-10">

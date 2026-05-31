@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, ArrowLeft, Plus, Sparkles } from 'lucide-react';
+import { useCartStore } from '@/store/cartStore';
 
 interface Watch {
   _id: string;
@@ -19,17 +20,12 @@ interface Watch {
 
 export default function NewArrivalsClient({ initialLiveWatches }: { initialLiveWatches: Watch[] }) {
       const router = useRouter();
-      const [cart, setCart] = useState<any[]>([]);
-
-      useEffect(() => {
-            setCart(JSON.parse(localStorage.getItem('luxury_cart') || '[]'));
-      }, []);
+      const cart = useCartStore((state) => state.items);
+      const addItem = useCartStore((state) => state.addItem);
+      const isMounted = useCartStore((state) => state._hasHydrated);
 
       const addToCart = (product: Watch) => {
-            const exists = cart.find(item => item._id === product._id);
-            const newCart = exists ? cart.map(i => i._id === product._id ? { ...i, qty: i.qty + 1 } : i) : [...cart, { ...product, qty: 1 }];
-            setCart(newCart);
-            localStorage.setItem('luxury_cart', JSON.stringify(newCart));
+            addItem({ ...product, id: product._id, quantity: 1 });
             router.push('/checkout');
       };
 
@@ -40,7 +36,7 @@ export default function NewArrivalsClient({ initialLiveWatches }: { initialLiveW
                         <h1 className="text-2xl font-serif font-black tracking-[5px] uppercase absolute left-1/2 -translate-x-1/2">Essential</h1>
                         <div className="relative cursor-pointer" onClick={() => router.push('/checkout')}>
                               <ShoppingBag size={24} className="text-black" />
-                              {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black">{cart.length}</span>}
+                              {isMounted && cart.length > 0 && <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black">{cart.length}</span>}
                         </div>
                   </header>
 

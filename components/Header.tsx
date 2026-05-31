@@ -17,6 +17,7 @@ export default function Header() {
   const [siteName, setSiteName] = useState("EssentialRush");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const cartItems = useCartStore((state) => state.items);
 
   const handleLogout = async () => {
@@ -45,6 +46,10 @@ export default function Header() {
           setSiteName(data.settings.siteName);
         }
       });
+  }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
   return (
@@ -79,7 +84,7 @@ export default function Header() {
         <div className="flex items-center gap-2 md:gap-6">
           <Link href="/cart" className="relative p-2 text-white/70 hover:text-[#D4AF37] transition-colors">
             <ShoppingBag size={20} />
-            {cartItems.length > 0 && (
+            {isMounted && cartItems.length > 0 && (
               <span className="absolute top-0 right-0 w-4 h-4 bg-[#D4AF37] text-black text-[8px] font-black rounded-full flex items-center justify-center">
                 {cartItems.length}
               </span>

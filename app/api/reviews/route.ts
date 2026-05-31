@@ -1,21 +1,14 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { getToken } from "next-auth/jwt";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// 🚀 FIX: Import authOptions from a dedicated lib/auth.ts file to prevent App/Pages Router conflicts
+import { authOptions } from "@/lib/auth"; 
 import { revalidatePath } from 'next/cache';
-
-// 🌟 1. BULLETPROOF DB CONNECTION
-let isConnected = false;
-const connectDB = async () => {
-    if (isConnected || mongoose.connection.readyState >= 1) return;
-    try { 
-        await mongoose.connect(process.env.MONGODB_URI as string); 
-        isConnected = true;
-    } catch (error) {
-        console.error("❌ MongoDB Connection Error (Reviews):", error);
-    }
-};
+import connectDB from "@/lib/mongodb";
 
 // 🌟 2. SCHEMA DEFINITION
 const reviewSchema = new mongoose.Schema({
@@ -30,6 +23,7 @@ const reviewSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+// Avoid model overwrite error in Next.js hot reload
 const Review = mongoose.models.Review || mongoose.model('Review', reviewSchema);
 
 // 🌟 3. STRICT SECURITY VERIFICATION (MILITARY GRADE)
@@ -44,7 +38,8 @@ const isSuperAdminRequest = async (req: NextRequest) => {
 
 export async function GET(req: NextRequest) {
     try {
-        await connectDB();
+        await connectDB(); // 👈 YEH LINE SABSE ZAROORI HAI
+        
         const { searchParams } = new URL(req.url);
         const wantsAdminView = searchParams.get('admin') === 'true';
 
@@ -56,6 +51,7 @@ export async function GET(req: NextRequest) {
 
         const query = wantsAdminView ? {} : { visibility: 'public' };
         const reviews = await Review.find(query).sort({ createdAt: -1 });
+        
         return NextResponse.json({ success: true, data: reviews });
     } catch (error) { 
         console.error("GET Reviews Error:", error);
@@ -73,7 +69,8 @@ export async function POST(req: NextRequest) {
         }
 
         const session = await getServerSession(authOptions);
-        const userId = session?.user?.id;
+        const userId = session?.user?.id || (session?.user as any)?.id;
+        
         if (!userId) {
             return NextResponse.json(
                 { success: false, message: "Sign in to leave a review." },
@@ -81,11 +78,9 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const userName =
-            typeof body.userName === "string" && body.userName.trim()
-                ? body.userName.trim()
-                : session.user?.name || "Member";
-
+        const userName = typeof body.userName === "string" && body.userName.trim()
+            ? body.userName.trim()
+            : session?.user?.name || "Member";
         const newReview = await Review.create({
             userName,
             userId,
@@ -93,7 +88,7 @@ export async function POST(req: NextRequest) {
             rating: Math.min(5, Math.max(1, Number(body.rating) || 5)),
             product: body.product || "GLOBAL",
             visibility: "pending",
-            isAdminGenerated: Boolean(session && (session.user as { role?: string }).role === "SUPER_ADMIN" && body.isAdminGenerated),
+            isAdminGenerated: Boolean(session && (session.user as any).role === "SUPER_ADMIN" && body.isAdminGenerated),
             media: Array.isArray(body.media) ? body.media : [],
         });
 
@@ -110,6 +105,7 @@ export async function PATCH(req: NextRequest) {
         if (!(await isSuperAdminRequest(req))) {
             return NextResponse.json({ success: false, error: 'You do not have access to do that.' }, { status: 403 });
         }
+        
         await connectDB();
         const { reviewId, visibility } = await req.json();
         
@@ -119,6 +115,7 @@ export async function PATCH(req: NextRequest) {
         
         const updatedReview = await Review.findByIdAndUpdate(reviewId, { visibility }, { new: true });
         revalidatePath('/', 'layout');
+        
         return NextResponse.json({ success: true, data: updatedReview });
     } catch (error) { 
         console.error("PATCH Review Error:", error);
@@ -131,6 +128,7 @@ export async function DELETE(req: NextRequest) {
         if (!(await isSuperAdminRequest(req))) {
             return NextResponse.json({ success: false, error: 'You do not have access to do that.' }, { status: 403 });
         }
+        
         await connectDB();
         
         const body = await req.json();
@@ -140,6 +138,7 @@ export async function DELETE(req: NextRequest) {
 
         await Review.findByIdAndDelete(id);
         revalidatePath('/', 'layout');
+        
         return NextResponse.json({ success: true, message: "Review removed." });
     } catch (error) {
         console.error("DELETE Review Error:", error);

@@ -2,25 +2,20 @@
 import { useState } from "react";
 import { ShoppingBag, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useCartStore } from "@/store/cartStore";
 
 export default function AddToCartButton({ product }: { product: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
 
   // ✅ Cart mein save karne ki logic
   const addToCart = () => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existing = cart.find((item: any) => item._id === product._id);
-    
-    if (existing) {
-      existing.quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-    
-    localStorage.setItem("cart", JSON.stringify(cart));
-    // Custom event taaki Navbar/Drawer ko pata chale ki cart update hua hai
-    window.dispatchEvent(new Event("storage"));
+    addItem({
+      ...product,
+      id: product._id,
+      quantity: 1
+    });
     alert("Added to your cart.");
   };
 

@@ -1,6 +1,13 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import  connectDB  from "@/lib/mongodb"; // Aapka standard db connection import
-import { Order, Product, Lead, Customer, ActivityLog } from "@/models/Enterprise";
 import { NextResponse } from "next/server";
+import { Order } from '@/models/Order';
+import { Product } from '@/models/Product';
+import Lead from '@/models/Lead';
+import User from '@/models/usertemp';
+import ActivityLog from '@/models/ActivityLog';
 
 /**
  * INTELLIGENCE CONTROLLER v4.0
@@ -38,11 +45,11 @@ export async function GET(req: Request) {
         { $group: { _id: null, total: { $sum: "$totalAmount" } } }
       ]),
       // Order Counts
-      Order.countDocuments(dateFilter),
+        Order.countDocuments(dateFilter),
       // Lead Counts
       Lead.countDocuments(dateFilter),
       // Customer Database Size
-      Customer.countDocuments(),
+      User.countDocuments(),
       // Inventory Health
       Product.aggregate([
         {
@@ -56,8 +63,7 @@ export async function GET(req: Request) {
       ]),
       // Security/Audit Trail
       ActivityLog.find().sort({ createdAt: -1 }).limit(10).lean()
-    ]);
-
+    ])
     // 3. Calculating Conversion Rate (Leads to Orders)
     const conversionRate = totalLeads > 0 ? ((totalOrders / totalLeads) * 100).toFixed(2) : 0;
 

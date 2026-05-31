@@ -10,8 +10,10 @@ import Link from "next/link";
 import { 
   LogOut, History, Sparkles, User, MapPin, Wallet, Heart, 
   Percent, Lock, HelpCircle, Copy, RefreshCw, Plus, Trash2, 
-  CheckCircle2, ChevronRight, Download, Package, Gift
+  CheckCircle2, ChevronRight, Download, Package, Gift,
+  X, Landmark, CreditCard, Share2 
 } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
 
 const VirtualVault = dynamic(() => import("@/components/VirtualVault"), { ssr: false });
 
@@ -24,8 +26,8 @@ interface AccountClientProps {
     orders?: any[];
     phone?: string;
     dob?: string;
-    myReferralCode?: string; // 🚀 YEH LINE ADD KAR DE
-    totalEarned?: number;    // 🚀 Ise bhi add kar de for safety
+    myReferralCode?: string; 
+    totalEarned?: number;    
   };
   session: {
     user?: {
@@ -41,9 +43,16 @@ export default function AccountClient({ initialData, session }: AccountClientPro
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<string | null>(null);
+  const addItem = useCartStore((state) => state.addItem);
   
-  // 💸 WITHDRAW STATE ADDED HERE
+  // 💸 STATES MODALS KE LIYE
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawMethod, setWithdrawMethod] = useState<'upi' | 'bank'>('upi');
+  const [withdrawDetails, setWithdrawDetails] = useState({ upiId: '', accountName: '', accountNumber: '', ifsc: '' });
+
+  const [isCopied, setIsCopied] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   const su = session?.user;
   const name = su?.name || "VIP Member";
@@ -53,18 +62,15 @@ export default function AccountClient({ initialData, session }: AccountClientPro
   const orders = Array.isArray(initialData?.orders) ? initialData.orders : [];
   const lastThreeOrders = orders.slice(0, 3);
 
-  const [profile, setProfile] = useState({ 
-    name, 
-    email, 
-    phone: initialData?.phone || "", 
-    dob: initialData?.dob || "" 
-  });
+  const [profile, setProfile] = useState({ name, email, phone: initialData?.phone || "", dob: initialData?.dob || "" });
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const [profileSaving, setProfileSaving] = useState(false);
 
   const [addresses, setAddresses] = useState<any[]>([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [addrForm, setAddrForm] = useState({ line1: "", city: "", state: "", zip: "", isDefault: false });
+  const [wishlist, setWishlist] = useState<any[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
 
   const tabVariants: Record<string, any> = {
     hidden: { opacity: 0, y: 15, scale: 0.98 },
@@ -72,8 +78,12 @@ export default function AccountClient({ initialData, session }: AccountClientPro
     exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.3 } }
   };
 
-  const [wishlist, setWishlist] = useState<any[]>([]);
-  const [wishlistLoading, setWishlistLoading] = useState(true);
+  // 🚀 FIX: TypeScript error ke liye ': any' laga diya
+  const modalVariants: any = {
+    hidden: { opacity: 0, scale: 0.95, y: 20 },
+    visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 25 } },
+    exit: { opacity: 0, scale: 0.95, y: 20, transition: { duration: 0.2 } }
+  };
 
   const notify = (msg: string) => {
     setToast(msg);
@@ -87,46 +97,59 @@ export default function AccountClient({ initialData, session }: AccountClientPro
     });
   };
 
-  // 💸 WITHDRAW FUNCTION LOGIC
-  const handleWithdraw = () => {
+  // 🚀 WITHDRAW BUTTON CLICK
+  const handleWithdrawClick = () => {
     if (walletPoints < 500) {
-        notify("Minimum balance of ₹500 is required for bank withdrawal.");
+        notify("Minimum balance of ₹500 is required for withdrawal.");
         return;
     }
-    setIsWithdrawing(true);
-    // Simulate API call for withdrawal
-    setTimeout(() => {
-        notify("Withdrawal request sent to Admin! Will be processed in 24 hrs.");
-        setIsWithdrawing(false);
-    }, 1500);
+    setShowWithdrawModal(true);
   };
 
-  useEffect(() => {
-    let mounted = true;
-    const loadAddresses = async () => {
-      try {
-        const r = await fetch("/api/user/addresses", { cache: "no-store" });
-        const j = await r.json();
-        if (!mounted) return;
-        if (j?.success && Array.isArray(j.data)) setAddresses(j.data);
-      } finally {
-        if (mounted) setAddrLoading(false);
-      }
-    };
-    const loadWishlist = async () => {
-      try {
-        const r = await fetch("/api/user/wishlist", { cache: "no-store" });
-        const j = await r.json();
-        if (!mounted) return;
-        if (j?.success && Array.isArray(j.items)) setWishlist(j.items);
-      } finally {
-        if (mounted) setWishlistLoading(false);
-      }
-    };
-    loadAddresses();
-    loadWishlist();
-    return () => { mounted = false; };
-  }, []);
+  // 🚀 ASLI WITHDRAW FORM SUBMIT
+  const handleWithdrawSubmit = async () => {
+    if (withdrawMethod === 'upi' && !withdrawDetails.upiId) return notify("Please enter UPI ID");
+    if (withdrawMethod === 'bank' && (!withdrawDetails.accountNumber || !withdrawDetails.ifsc)) return notify("Please fill all bank details");
+
+    setIsWithdrawing(true);
+    
+    try {
+        const res = await fetch('/api/withdrawals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amount: walletPoints,
+                method: withdrawMethod,
+                details: withdrawDetails
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            notify("Withdrawal request sent! Funds will be credited in 24 hrs.");
+            setShowWithdrawModal(false);
+            setWithdrawDetails({ upiId: '', accountName: '', accountNumber: '', ifsc: '' });
+        } else {
+            notify(data.error || "Failed to submit request.");
+        }
+    } catch (error) {
+        notify("Network error. Try again.");
+    } finally {
+        setIsWithdrawing(false);
+    }
+  };
+
+  // 🚀 LINK COPY FUNCTION
+  const handleCopyLink = () => {
+    const referralCode = initialData?.myReferralCode || "CODE"; 
+    const fullLink = `${window.location.origin}/?ref=${referralCode}`;
+    navigator.clipboard.writeText(fullLink);
+    setIsCopied(true);
+    
+    setShowReferralModal(true); 
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   const validateProfile = () => {
     const errs: Record<string, string> = {};
@@ -141,17 +164,14 @@ export default function AccountClient({ initialData, session }: AccountClientPro
     if (!validateProfile()) return;
     setProfileSaving(true);
     try {
-    
-      const res = await fetch('/api/orders', { 
-    cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
-});
-      
+      const res = await fetch('/api/user/profile', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile)
+      });
       if (res.ok) {
         notify("Profile details updated successfully.");
-        startTransition(() => {
-          router.refresh();
-        });
+        startTransition(() => { router.refresh(); });
       } else {
         notify("Failed to update profile.");
       }
@@ -213,12 +233,26 @@ export default function AccountClient({ initialData, session }: AccountClientPro
   };
 
   const moveToCart = (item: any) => {
-    const current = JSON.parse(localStorage.getItem("luxury_cart") || "[]");
-    const exists = current.find((x: any) => x._id === item._id);
-    const next = exists ? current.map((x: any) => (x._id === item._id ? { ...x, qty: (x.qty || 1) + 1 } : x)) : [...current, { ...item, qty: 1 }];
-    localStorage.setItem("luxury_cart", JSON.stringify(next));
+    addItem({ ...item, id: item._id, quantity: 1 });
     notify(`${item.name || item.title} moved to cart.`);
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const loadData = async () => {
+      try {
+        const [rAdd, rWish] = await Promise.all([fetch("/api/user/addresses"), fetch("/api/user/wishlist")]);
+        const [jAdd, jWish] = await Promise.all([rAdd.json(), rWish.json()]);
+        if (!mounted) return;
+        if (jAdd?.success && Array.isArray(jAdd.data)) setAddresses(jAdd.data);
+        if (jWish?.success && Array.isArray(jWish.items)) setWishlist(jWish.items);
+      } finally {
+        if (mounted) { setAddrLoading(false); setWishlistLoading(false); }
+      }
+    };
+    loadData();
+    return () => { mounted = false; };
+  }, []);
 
   const TABS = [
     { key: "overview", label: "Overview", icon: Sparkles },
@@ -233,20 +267,106 @@ export default function AccountClient({ initialData, session }: AccountClientPro
   ];
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] text-[#050505] font-sans pb-24 lg:pb-0">
+    <div className="min-h-screen bg-[#F7F7F7] text-[#050505] font-sans pb-24 lg:pb-0 relative">
       
-      {/* Dynamic Toast Notification */}
+      {/* Dynamic Toast */}
       <AnimatePresence>
         {toast && (
-          <motion.div 
-            initial={{ opacity: 0, y: -50, x: "-50%" }} 
-            animate={{ opacity: 1, y: 0, x: "-50%" }} 
-            exit={{ opacity: 0, y: -50, x: "-50%" }}
-            className="fixed top-8 left-1/2 z-[200] bg-[#0A0A0A] border border-[#D4AF37]/30 text-white px-6 py-4 rounded-full flex items-center gap-4 shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md"
-          >
+          <motion.div initial={{ opacity: 0, y: -50, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }} exit={{ opacity: 0, y: -50, x: "-50%" }} className="fixed top-8 left-1/2 z-[200] bg-[#0A0A0A] border border-[#D4AF37]/30 text-white px-6 py-4 rounded-full flex items-center gap-4 shadow-2xl backdrop-blur-md">
             <CheckCircle2 size={18} className="text-[#D4AF37]" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">{toast}</span>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🚀 WITHDRAWAL MODAL */}
+      <AnimatePresence>
+        {showWithdrawModal && (
+          <div className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div variants={modalVariants} initial="hidden" animate="visible" exit="exit" className="bg-[#0A0A0A] border border-gray-800 rounded-[2.5rem] p-8 w-full max-w-lg text-white relative shadow-2xl overflow-hidden">
+              <button onClick={() => setShowWithdrawModal(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-full"><X size={20}/></button>
+              
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-[#D4AF37]/10 text-[#D4AF37] rounded-2xl flex items-center justify-center"><Wallet size={24}/></div>
+                <div>
+                    <h3 className="text-2xl font-serif italic font-black">Withdraw Funds</h3>
+                    <p className="text-xs text-gray-400 font-mono">Available: ₹{walletPoints.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Payment Method Selector */}
+              <div className="flex gap-4 mb-6">
+                  <button onClick={() => setWithdrawMethod('upi')} className={`flex-1 p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${withdrawMethod === 'upi' ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]' : 'border-gray-800 text-gray-400 hover:border-gray-600'}`}>
+                      <CreditCard size={24}/> <span className="text-[10px] font-black uppercase tracking-widest">UPI ID</span>
+                  </button>
+                  <button onClick={() => setWithdrawMethod('bank')} className={`flex-1 p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${withdrawMethod === 'bank' ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]' : 'border-gray-800 text-gray-400 hover:border-gray-600'}`}>
+                      <Landmark size={24}/> <span className="text-[10px] font-black uppercase tracking-widest">Bank Transfer</span>
+                  </button>
+              </div>
+
+              {/* Forms */}
+              <div className="space-y-4 mb-8">
+                {withdrawMethod === 'upi' ? (
+                    <input type="text" placeholder="Enter UPI ID (e.g., name@okhdfcbank)" value={withdrawDetails.upiId} onChange={(e) => setWithdrawDetails({...withdrawDetails, upiId: e.target.value})} className="w-full p-5 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors font-mono text-sm" />
+                ) : (
+                    <>
+                        <input type="text" placeholder="Account Holder Name" value={withdrawDetails.accountName} onChange={(e) => setWithdrawDetails({...withdrawDetails, accountName: e.target.value})} className="w-full p-4 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors text-sm" />
+                        <input type="number" placeholder="Account Number" value={withdrawDetails.accountNumber} onChange={(e) => setWithdrawDetails({...withdrawDetails, accountNumber: e.target.value})} className="w-full p-4 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors font-mono text-sm" />
+                        <input type="text" placeholder="IFSC Code" value={withdrawDetails.ifsc} onChange={(e) => setWithdrawDetails({...withdrawDetails, ifsc: e.target.value})} className="w-full p-4 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors uppercase font-mono text-sm" />
+                    </>
+                )}
+              </div>
+
+              <button onClick={handleWithdrawSubmit} disabled={isWithdrawing} className="w-full py-5 bg-[#D4AF37] text-black hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)] flex justify-center items-center gap-2">
+                  {isWithdrawing ? <RefreshCw size={16} className="animate-spin"/> : `Withdraw ₹${walletPoints.toLocaleString()}`}
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 🚀 REFERRAL HOW-IT-WORKS MODAL */}
+      <AnimatePresence>
+        {showReferralModal && (
+          <div className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div variants={modalVariants} initial="hidden" animate="visible" exit="exit" className="bg-white border border-gray-100 rounded-[2.5rem] p-8 w-full max-w-md text-black relative shadow-2xl">
+              <button onClick={() => setShowReferralModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-black transition-colors bg-gray-50 p-2 rounded-full"><X size={20}/></button>
+              
+              <div className="text-center mb-8 pt-4">
+                  <div className="w-16 h-16 bg-[#D4AF37] text-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"><Gift size={32}/></div>
+                  <h3 className="text-2xl font-serif italic font-black">Link Copied!</h3>
+                  <p className="text-sm text-gray-500 mt-2">Here is how you earn with Essential Network</p>
+              </div>
+
+              <div className="space-y-6 mb-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-[#0A0A0A] text-[#D4AF37] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-md z-10"><Share2 size={16}/></div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                          <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-gray-400">Step 1</p>
+                          <p className="text-sm font-bold">Share your link with a friend.</p>
+                      </div>
+                  </div>
+                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-200 text-gray-500 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"><Percent size={16}/></div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                          <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-gray-400">Step 2</p>
+                          <p className="text-sm font-bold">They get <span className="text-green-600">₹100 Off</span> instantly at checkout.</p>
+                      </div>
+                  </div>
+                  <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-[#D4AF37] text-black shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 shadow-md"><Wallet size={16}/></div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/30">
+                          <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-[#D4AF37]">Step 3</p>
+                          <p className="text-sm font-bold text-black">Order is Delivered? You get <span className="text-green-600">₹100</span> in Vault!</p>
+                      </div>
+                  </div>
+              </div>
+
+              <button onClick={() => setShowReferralModal(false)} className="w-full py-4 bg-[#0A0A0A] text-white hover:bg-[#D4AF37] hover:text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                  Got it, Let&apos;s Earn!
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -276,13 +396,9 @@ export default function AccountClient({ initialData, session }: AccountClientPro
              <p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-[0.3em] mt-2 bg-black/5 inline-block px-3 py-1 rounded-full">{loyaltyTier}</p>
           </div>
 
-          <div className="bg-white p-3 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex flex-col gap-1">
+          <div className="bg-white p-3 rounded-[2rem] border border-gray-100 flex flex-col gap-1">
             {TABS.map((t) => (
-              <button 
-                key={t.key} 
-                onClick={() => setActiveTab(t.key as TabType)} 
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === t.key ? "bg-[#0A0A0A] text-[#D4AF37] shadow-lg translate-x-2" : "text-gray-400 hover:bg-gray-50 hover:text-black"}`}
-              >
+              <button key={t.key} onClick={() => setActiveTab(t.key as TabType)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === t.key ? "bg-[#0A0A0A] text-[#D4AF37] shadow-lg translate-x-2" : "text-gray-400 hover:bg-gray-50 hover:text-black"}`}>
                 <t.icon size={16} className={activeTab === t.key ? "text-[#D4AF37]" : "text-gray-400"} />
                 {t.label}
               </button>
@@ -297,8 +413,8 @@ export default function AccountClient({ initialData, session }: AccountClientPro
             {/* 1. OVERVIEW */}
             {activeTab === "overview" && (
               <motion.div key="overview" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-8">
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  
                   {/* Luxury Wallet Card */}
                   <div className="xl:col-span-2 bg-gradient-to-br from-[#0A0A0A] to-[#1A1A1A] p-10 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.2)] relative overflow-hidden flex flex-col justify-between min-h-[220px]">
                     <div className="absolute -right-10 -bottom-10 text-white/5 rotate-12"><Wallet size={200}/></div>
@@ -310,20 +426,19 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                         <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white"><Sparkles size={20}/></div>
                     </div>
                     <div className="relative z-10 mt-8 flex gap-4">
-                        <button onClick={() => notify("Redirecting to Add Funds...")} className="px-6 py-3 bg-[#D4AF37] text-black hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors">Add Funds</button>
-                        <button onClick={() => setActiveTab("wallet")} className="px-6 py-3 bg-white/10 text-white hover:bg-white/20 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors">History</button>
+                        <button onClick={handleWithdrawClick} className="px-6 py-3 bg-[#D4AF37] text-black hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-lg">Withdraw Funds</button>
                     </div>
                   </div>
 
                   {/* Summary Cards */}
-                  <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] flex flex-col justify-center items-center text-center">
+                  <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 flex flex-col justify-center items-center text-center">
                     <div className="w-16 h-16 bg-gray-50 text-black rounded-2xl flex items-center justify-center mb-4"><Package size={24}/></div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Acquisitions</p>
                     <h3 className="text-4xl font-serif italic font-black">{orders.length}</h3>
                   </div>
                 </div>
 
-                {/* 🌟 FIXED: PYRAMID REFERRAL CARD 🌟 */}
+                {/* 🚀 ESSENTIAL NETWORK CARD */}
                 <div className="bg-[#0A0A0A] text-[#D4AF37] p-8 md:p-10 rounded-[2.5rem] border border-[#D4AF37]/20 shadow-[0_10px_30px_rgba(212,175,55,0.1)] relative overflow-hidden group flex flex-col justify-center">
                     <div className="absolute -right-6 -bottom-6 text-white/5 rotate-12 group-hover:scale-110 transition-transform duration-700">
                         <Gift size={150}/>
@@ -331,36 +446,31 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex-1">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-2">Essential Network</p>
-                            <h4 className="text-3xl md:text-4xl font-serif font-black italic mb-2 text-white">Give 10% Off, Get 10% Vault Points</h4>
-                            <p className="text-xs md:text-sm text-gray-400 max-w-md">When your friend&apos;s order is DELIVERED using your code, they get 10% cashback and you get 10% of their order value as Vault Points. Redeem for watches or withdraw as Cash!</p>
+                            <h4 className="text-3xl md:text-4xl font-serif font-black italic mb-2 text-white">Give Flat ₹100 Off, Get ₹100</h4>
+                            <p className="text-xs md:text-sm text-gray-400 max-w-md">Share your exclusive link. When your friend&apos;s order is DELIVERED using your link, they instantly get ₹100 off, and you get ₹100 added to your Vault.</p>
                         </div>
                         
-                        <div className="flex flex-col gap-3 w-full md:w-auto shrink-0">
-                            <div className="flex items-center justify-between bg-white/5 p-2 pl-5 rounded-2xl border border-white/10 w-full">
-                                <span className="font-mono font-bold tracking-widest text-[#D4AF37]">
-                                    {initialData?.myReferralCode || "VAULT-VIP"}
-                                </span>
-                                <motion.button 
-                                    whileTap={{ scale: 0.9 }} 
-                                    onClick={() => { 
-                                        navigator.clipboard.writeText(initialData?.myReferralCode || "VAULT-VIP"); 
-                                        notify("Referral code copied to clipboard!"); 
-                                    }} 
-                                    className="ml-6 p-4 bg-[#D4AF37] text-black rounded-xl hover:bg-white transition-colors"
-                                >
-                                    <Copy size={16}/>
-                                </motion.button>
+                        <div className="flex flex-col gap-3 w-full md:w-auto shrink-0 z-10">
+                            {/* LINK WALA BOX */}
+                            <div className="flex items-center justify-between bg-white/5 p-2 pl-4 rounded-2xl border border-white/10 w-full min-w-[280px]">
+                                <div className="truncate text-sm text-gray-400 font-mono">
+                                    .../?ref=<span className="text-white font-bold">{initialData?.myReferralCode || "CODE"}</span>
+                                </div>
+                                <button onClick={handleCopyLink} className={`ml-4 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isCopied ? 'bg-green-500 text-black' : 'bg-[#D4AF37] text-black hover:bg-white'}`}>
+                                    {isCopied ? 'Copied!' : 'Copy Link'}
+                                </button>
                             </div>
-                            {/* WITHDRAW BUTTON */}
-                            <button onClick={handleWithdraw} disabled={isWithdrawing} className="w-full py-4 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex justify-center items-center gap-2">
-                                {isWithdrawing ? <RefreshCw size={14} className="animate-spin"/> : "Withdraw as Cash (Min ₹500)"}
+                            
+                            {/* NEW WITHDRAW BUTTON */}
+                            <button onClick={handleWithdrawClick} className="w-full py-4 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex justify-center items-center gap-2">
+                                Withdraw as Cash (Min ₹500)
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Recent Orders Section */}
-                <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+                <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100">
                   <div className="flex items-center justify-between mb-8">
                     <h4 className="text-2xl font-serif font-black tracking-tight">Recent Activity</h4>
                     <button onClick={() => setActiveTab("orders")} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black transition-colors">View All <ChevronRight size={14}/></button>
@@ -379,7 +489,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                                 <div className="flex w-full gap-2">
                                   <span className={`px-4 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest w-full sm:w-auto text-center flex items-center justify-center ${o.status === 'DELIVERED' ? 'bg-green-50 text-green-700' : 'bg-[#0A0A0A] text-[#D4AF37]'}`}>{o.status || 'PENDING'}</span>
-                                  {/* 🚀 SMART TRACK BUTTON 🚀 */}
                                   <SmartTrackButton orderId={o.orderId} email={session?.user?.email || ""} />
                                 </div>
                             </div>
@@ -396,7 +505,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 2. PROFILE */}
+             {/* 2. PROFILE */}
             {activeTab === "profile" && (
               <motion.div key="profile" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
                 <h3 className="text-3xl font-serif italic font-black tracking-tight mb-8">Personal Details</h3>
@@ -450,7 +559,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                         <motion.button whileTap={{ scale: 0.95 }} onClick={() => notify("Downloading PDF Invoice...")} className="px-6 py-3 flex-1 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-[10px] font-black uppercase tracking-widest transition-colors gap-2"><Download size={14}/> Invoice</motion.button>
                       </div>
                       <div className="w-full">
-                        {/* 🚀 SMART TRACK BUTTON 🚀 */}
                         <SmartTrackButton orderId={order.orderId} email={session?.user?.email || ""} />
                       </div>
                     </div>
@@ -629,7 +737,8 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                             {f.q}
                             <ChevronRight size={16} className="text-gray-400 group-open:rotate-90 transition-transform"/>
                         </summary>
-                        <div className="px-6 pb-6 pt-0 text-sm text-gray-600 leading-relaxed border-t border-gray-100/50 mt-2 pt-4">
+                        {/* 🚀 FIX: pt-0 hata diya taaki Tailwind conflict warning chali jaye */}
+                        <div className="px-6 pb-6 text-sm text-gray-600 leading-relaxed border-t border-gray-100/50 mt-2 pt-4">
                             {f.a}
                         </div>
                       </details>
@@ -651,15 +760,10 @@ export default function AccountClient({ initialData, session }: AccountClientPro
           </AnimatePresence>
         </main>
       </div>
-
-      {/* Mobile Bottom Navigation (App-like feel) */}
+      
+      {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-gray-100 p-2 pb-safe flex justify-around items-center lg:hidden z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        {[
-          { key: "overview", icon: Sparkles, label: "Home" },
-          { key: "orders", icon: Package, label: "Orders" },
-          { key: "wishlist", icon: Heart, label: "Saved" },
-          { key: "profile", icon: User, label: "Profile" },
-        ].map((t) => (
+        {[{ key: "overview", icon: Sparkles, label: "Home" }, { key: "orders", icon: Package, label: "Orders" }, { key: "wishlist", icon: Heart, label: "Saved" }, { key: "profile", icon: User, label: "Profile" }].map((t) => (
           <button key={t.key} onClick={() => setActiveTab(t.key as TabType)} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeTab === t.key ? "text-[#D4AF37]" : "text-gray-400 hover:text-black"}`}>
             <t.icon size={20} className={activeTab === t.key ? "fill-[#D4AF37]/20" : ""} />
             <span className="text-[8px] font-black uppercase tracking-widest">{t.label}</span>

@@ -24,6 +24,7 @@ export interface IProduct extends Document {
     focusKeyword: string;
     slug: string;
     noindex: boolean;
+    
     imageAltTexts: Record<string, string>;
   };
 }

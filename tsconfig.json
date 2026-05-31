@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "target": "ES2017",
     "lib": [
       "dom",
@@ -16,7 +17,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "baseUrl": ".",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -24,10 +25,22 @@
       }
     ],
     "paths": {
-  "@/*": ["./next-client/*"],
-  "@/components/*": ["./next-client/components/*"]
-}
-
+      "@/*": [
+        "./*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/models/*": [
+        "./models/*"
+      ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+      "@/app/api/*": [
+        "./app/api/*"
+      ]
+    }
   },
   "include": [
     "next-env.d.ts",

@@ -33,8 +33,6 @@ import SeoAnalyticsDashboard from '@/components/godmode/SeoAnalyticsDashboard';
 import RedirectManager from '@/components/godmode/RedirectManager';
 import ImageSeoPanel from '@/components/godmode/ImageSeoPanel';
 
-
-
 const MODULES = [
   { id: 'FULL_DASHBOARD', icon: BarChart3, label: 'Main Dashboard' },
   { id: 'INVENTORY', icon: Package, label: 'Products & Inventory' },
@@ -54,7 +52,8 @@ const MODULES = [
 
 const DEFAULT_GALLERY: string[] = [];
 
-const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video" }: any) => {
+// 🚀 FIX: Added onUploadStateChange to communicate with parent
+const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video", onUploadStateChange }: any) => {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState("");
@@ -63,6 +62,7 @@ const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video" }: any
   const handleUpload = async (file: File) => {
     if (!file) return;
     setUploading(true);
+    if (onUploadStateChange) onUploadStateChange(true); // 🚀 Tell parent upload started
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -73,7 +73,10 @@ const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video" }: any
         onUploadSuccess(data.url);
       } else { alert(`Upload failed: ${data.error || 'Check Cloudinary Keys'}`); }
     } catch (e) { alert("Upload failed. Is your server running?"); }
-    finally { setUploading(false); }
+    finally { 
+      setUploading(false); 
+      if (onUploadStateChange) onUploadStateChange(false); // 🚀 Tell parent upload finished
+    }
   };
 
   return (
@@ -99,6 +102,7 @@ const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video" }: any
 function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('FULL_DASHBOARD');
   const [dashboardView, setDashboardView] = useState<'orders' | 'abandoned'>('orders');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -263,21 +267,33 @@ function AdminDashboard() {
     } catch (e) { alert("Failed to add review."); } finally { setIsSyncing(false); }
   };
 
+  // 🚀 FIX: Updated Payload Logic and Upload Checks
   const handleSaveProduct = async () => {
     if (!watchForm.name.trim() || !watchForm.price.toString().trim() || !watchForm.imageUrl.trim()) {
       return alert("⚠️ Missing Fields! Product Name, Base Price, and Main Image URL are mandatory.");
     }
+    
+    if (isImageUploading) {
+      return alert("⚠️ Please wait! Main Image is still uploading to the server...");
+    }
+
     setIsSyncing(true); addLog("Encrypting product data...");
     try {
       const validAmazonDetails = watchForm.amazonDetails.filter(d => d.key.trim() !== '' && d.value.trim() !== '');
       const tagsArray = watchForm.seoTags.split(',').map(s => s.trim()).filter(s => s);
       const additionalImages = watchForm.images.filter(img => typeof img === 'string' && img.trim() !== "");
+      
+      // 🚀 THE MAGIC FIX: Combine Main Image + Additional Images into one array
+      const allImages = watchForm.imageUrl ? [watchForm.imageUrl, ...additionalImages] : additionalImages;
+
       const generatedSlug = watchForm.seo.slug || watchForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
       const generatedSku = `PRD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
+      
       const finalProduct = {
         name: watchForm.name, slug: generatedSlug, sku: generatedSku, brand: watchForm.brand, category: watchForm.category,
         price: Number(watchForm.price) || 0, offerPrice: Number(watchForm.offerPrice) || Number(watchForm.price) || 0, stock: Number(watchForm.stock) || 0,
-        imageUrl: watchForm.imageUrl, images: additionalImages, videoUrl: watchForm.videoUrl, model3DUrl: watchForm.model3DUrl,
+        images: allImages, // 🚀 Perfect Array mapping for schema
+        videoUrl: watchForm.videoUrl, model3DUrl: watchForm.model3DUrl,
         description: watchForm.description, tags: tagsArray, priority: Number(watchForm.priority) || 0, badge: watchForm.badge, amazonDetails: validAmazonDetails,
         vipVaultKey: watchForm.vipVaultKey.toUpperCase(), vipDiscount: Number(watchForm.vipDiscount) || 0, transitFee: Number(watchForm.transitFee) || 0, taxPercentage: Number(watchForm.taxPercentage) || 18, taxInclusive: watchForm.taxInclusive,
         seo: watchForm.seo
@@ -293,9 +309,9 @@ function AdminDashboard() {
           vipVaultKey: '', vipDiscount: '', transitFee: '0', taxPercentage: '18', taxInclusive: true,
           seo: { metaTitle: '', metaDescription: '', focusKeyword: '', slug: '', noindex: false, imageAltTexts: {} }
         });
-        fetchDashboardData(true);
+        window.location.reload(); // 🚀 Force UI sync
       } else { alert(`Error saving product: ${data.error || 'Check fields and try again'}`); }
-    } catch (e) { alert("Network Error!"); }
+    } catch (e: any) { alert(`Network Error! ${e.message}`); console.error('Product Save Error:', e); }
     finally { setIsSyncing(false); }
   };
 
@@ -652,6 +668,7 @@ function AdminDashboard() {
               liveWatches={liveWatches}
               handleDeleteProduct={handleDeleteProduct}
               PremiumUploadNode={PremiumUploadNode}
+              setIsImageUploading={setIsImageUploading} // 🚀 Pass state handler to child
             />
           )}
 

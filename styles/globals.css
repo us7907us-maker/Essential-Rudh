@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Default Theme Variables */
+  :root {
+    --background: #F7F7F7;
+    --foreground: #050505;
+    --gold: #D4AF37;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* 🚀 THE FIX: Standard CSS use kiya badle mein @apply ke, taaki crash na ho */
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased;
+  }
+
+  /* Text select karne par Gold background aayega */
+  ::selection {
+    background-color: #D4AF37;
+    color: #050505;
+  }
+}
+
+@layer utilities {
+  /* 🚀 Hide Scrollbar (Lekin scroll kaam karega) - Premium UI ke liye */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Custom Luxury Gold Text & Background */
+  .text-gold {
+    color: var(--gold);
+  }
+  
+  .bg-gold {
+    background-color: var(--gold);
+  }
+
+  /* Glassmorphism Effect for premium cards */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+}

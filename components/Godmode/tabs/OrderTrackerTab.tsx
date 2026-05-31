@@ -37,15 +37,26 @@ export default function OrderTracker({
        </div>
        
        <div className="space-y-4">
-         {orders.length === 0 ? <p className="text-center py-20 text-gray-600 font-bold tracking-widest uppercase text-xs md:text-sm">No Active Operations</p> : orders.map((o: any, i: number) => (
+         {(!orders || orders.length === 0) ? <p className="text-center py-20 text-gray-600 font-bold tracking-widest uppercase text-xs md:text-sm">No Active Operations</p> : orders.map((o: any, i: number) => (
             <div key={i} className="p-4 md:p-6 bg-[#111] border border-white/10 rounded-[20px] flex flex-col gap-4 hover:border-blue-500/50 transition-colors shadow-lg w-full max-w-[100vw]">
                <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-4">
                    <div className="flex items-center gap-4 w-full md:w-auto">
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-black border border-white/20 flex items-center justify-center text-white font-bold text-xs md:text-sm shrink-0">#{o.orderId?.slice(-4) || 'UKN'}</div>
+                      {/* 🚀 FIX 1: Using MongoDB _id for Order Number */}
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-black border border-white/20 flex items-center justify-center text-white font-bold text-xs md:text-sm shrink-0">
+                        #{(o.orderId || o._id)?.slice(-4) || 'UKN'}
+                      </div>
                       <div className="overflow-hidden">
-                         <h4 className="font-bold text-base md:text-xl text-white mb-1 truncate">{o.customer?.name || 'Guest'}</h4>
+                         {/* 🚀 FIX 2: Matching Backend customerInfo schema */}
+                         <h4 className="font-bold text-base md:text-xl text-white mb-1 truncate">
+                           {o.customerInfo?.firstName || o.customer?.name || 'Guest'} {o.customerInfo?.lastName || ''}
+                         </h4>
                          <div className="flex flex-wrap items-center gap-2">
-                           <p className="text-[10px] md:text-xs text-gray-400 flex items-center gap-1 md:gap-2 truncate"><MapPin size={10} className="md:w-3 md:h-3"/> {o.customer?.city || 'Unknown'} <span className="mx-1 md:mx-2 text-white/20">|</span> <Package size={10} className="md:w-3 md:h-3"/> {o.items?.length || 1} Unit(s)</p>
+                           <p className="text-[10px] md:text-xs text-gray-400 flex items-center gap-1 md:gap-2 truncate">
+                             <MapPin size={10} className="md:w-3 md:h-3"/> {o.customerInfo?.city || o.shippingAddress?.city || 'Unknown'} 
+                             <span className="mx-1 md:mx-2 text-white/20">|</span> 
+                             {/* 🚀 FIX 3: Matching Backend orderItems schema */}
+                             <Package size={10} className="md:w-3 md:h-3"/> {o.orderItems?.length || o.items?.length || 1} Unit(s)
+                           </p>
                            {o.referralCode && (
                              <span className="bg-[#D4AF37]/20 text-[#D4AF37] text-[8px] md:text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#D4AF37]/30 flex items-center gap-1">
                                🎁 Referral: {o.referralCode}
@@ -59,7 +70,7 @@ export default function OrderTracker({
                         <p className="text-[10px] md:text-xs text-gray-500 mb-1">Clearance Value</p>
                         <p className="font-bold text-green-400 text-lg md:text-2xl">₹{(o.totalAmount || 0).toLocaleString()}</p>
                       </div>
-                      <select value={o.status} onChange={(e) => handleUpdateOrderStatus(o._id, e.target.value)} className="w-full md:w-48 min-h-[44px] bg-black border border-white/30 text-white text-[10px] md:text-xs font-bold uppercase rounded-xl p-3 md:p-4 cursor-pointer hover:border-[#D4AF37] transition-colors appearance-none text-center">
+                      <select value={o.status || 'PENDING'} onChange={(e) => handleUpdateOrderStatus(o._id, e.target.value)} className="w-full md:w-48 min-h-[44px] bg-black border border-white/30 text-white text-[10px] md:text-xs font-bold uppercase rounded-xl p-3 md:p-4 cursor-pointer hover:border-[#D4AF37] transition-colors appearance-none text-center">
                         <option value="PENDING">Clearance Pending</option>
                         <option value="PROCESSING">Processing</option>
                         <option value="DISPATCHED">In Transit</option>

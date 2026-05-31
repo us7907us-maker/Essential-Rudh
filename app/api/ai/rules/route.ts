@@ -1,8 +1,9 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import PricingRule from '@/models/PricingRule';
-
-export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

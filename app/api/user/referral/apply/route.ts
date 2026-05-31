@@ -4,7 +4,7 @@ export const fetchCache = 'force-no-store';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import User from '@/models/usertemp';
 import UserService from '@/services/user.service';
 import { validateInput } from '@/lib/validation';

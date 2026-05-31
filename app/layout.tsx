@@ -1,19 +1,30 @@
-import type { Metadata, Viewport } from 'next'
-import './globals.css'
-import { Analytics } from '@vercel/analytics/react';
-import { GlobalProvider } from './GlobalProvider';
-import { ToastProvider } from '@/context/ToastContext';
+import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
-import AffiliateTracker from '@/components/AffiliateTracker';
+import { Analytics } from '@vercel/analytics/react';
 
-// 🚀 THE APP-MODE VIEWPORT: Locks zoom and sets the native status bar color
+// Styles & Providers
+import '../styles/globals.css';
+
+import { GlobalProvider } from './GlobalProvider';
+import { ToastProvider } from '../context/ToastContext';
+
+// Components
+import AffiliateTracker from '../components/AffiliateTracker';
+
+// ==========================================
+// VIEWPORT CONFIGURATION (App-like feel)
+// ==========================================
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false, // Prevents zooming to give it a true native app feel
+  userScalable: false, 
 };
+
+// ==========================================
+// METADATA & SEO CONFIGURATION
+// ==========================================
 export const metadata: Metadata = {
   title: {
     default: 'Essential | Fine Horology & Luxury Timepieces',
@@ -24,8 +35,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'Essential Rush' }],
   creator: 'Essential Rush',
   publisher: 'Essential Rush',
-
-  // 🚀 THE PWA METADATA: Tells phones this is an installable app
   manifest: '/manifest.json',
   applicationName: 'Essential Rush',
   appleWebApp: {
@@ -33,7 +42,6 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Essential',
   },
-
   formatDetection: {
     email: false,
     address: false,
@@ -73,19 +81,22 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-}
+};
 
+// ==========================================
+// ROOT LAYOUT
+// ==========================================
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* Added your dark theme base classes here just to be safe */}
       <body className="antialiased overflow-x-hidden">
-
-        {/* 🚀 THE TRACKER: Properly Wrapped in Suspense so Next.js build passes */}
+        
+        {/* 🚀 INVISIBLE LINK TRACKER */}
         <Suspense fallback={null}>
           <AffiliateTracker />
         </Suspense>
 
+        {/* 🚀 GLOBAL STATE PROVIDERS */}
         <GlobalProvider>
           <ToastProvider>
             <main>
@@ -94,8 +105,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </ToastProvider>
         </GlobalProvider>
 
+        {/* 🚀 VERCEL ANALYTICS */}
         <Analytics />
+        
       </body>
     </html>
-  )
+  );
 }

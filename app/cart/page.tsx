@@ -5,38 +5,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Trash2, ArrowLeft, ShoppingBag, ShieldCheck, ArrowRight } from 'lucide-react';
+import { useHydratedCart } from '@/store/cartStore'; // 🚀 Global State imported
 import dynamic from 'next/dynamic';
 
 function CartPage() {
     const router = useRouter();
-    const [cart, setCart] = useState<any[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+    // 🚀 THE FIX: Use Global Cart State instead of manual localStorage
+    const { items: cart, removeItem, _hasHydrated } = useHydratedCart();
 
-    useEffect(() => {
-        // Safe Client-Side Loading to bypass Vercel SSR Crash
-        setCart(JSON.parse(localStorage.getItem('luxury_cart') || '[]'));
-        setIsLoaded(true);
-    }, []);
+    const cartTotal = (Array.isArray(cart) ? cart : []).reduce((total, item) => 
+        total + ((item.offerPrice || item.price || 0) * (item.qty || item.quantity || 1)), 0
+    );
 
-    // 🚨 FIX: Index-based remove taaki duplicate items mein se sirf wahi delete ho jispe click kiya hai
-    const removeItem = (indexToRemove: number) => {
-        const newCart = cart.filter((_, index) => index !== indexToRemove);
-        setCart(newCart); 
-        localStorage.setItem('luxury_cart', JSON.stringify(newCart));
-        router.refresh();
-    };
-
-    const cartTotal = cart.reduce((total, item) => total + ((item.offerPrice || item.price) * (item.qty || 1)), 0);
-
-    if (!isLoaded) return <div className="h-screen bg-[#FAFAFA] flex items-center justify-center"><div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div></div>;
+    if (!_hasHydrated) return <div className="h-screen bg-[#FAFAFA] flex items-center justify-center"><div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div></div>;
 
     return (
         <div className="min-h-screen bg-[#FAFAFA] text-black selection:bg-[#D4AF37] selection:text-white">
-            {/* LUXURY HEADER */}
             <header className="w-full bg-white/90 backdrop-blur-xl border-b border-gray-200 py-6 px-6 md:px-12 flex justify-between items-center sticky top-0 z-50 shadow-sm">
                 <Link href="/" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-black transition-colors"><ArrowLeft size={16}/> Keep shopping</Link>
                 <h1 className="text-2xl font-serif font-black tracking-[5px] uppercase absolute left-1/2 -translate-x-1/2 text-black">Essential</h1>
-                <div className="flex items-center gap-2 text-green-600 text-[10px] font-black uppercase tracking-widest hidden md:flex"><ShieldCheck size={14}/> Safe checkout</div>
+                <div className="hidden md:flex items-center gap-2 text-green-600 text-[10px] font-black uppercase tracking-widest"><ShieldCheck size={14}/> Safe checkout</div>
             </header>
 
             <main className="max-w-5xl mx-auto pt-16 pb-32 px-6 md:px-12">
@@ -52,22 +40,21 @@ function CartPage() {
                         </div>
                         <h3 className="text-3xl font-serif mb-4 text-black">Your cart is empty</h3>
                         <p className="text-gray-500 text-base mb-10 font-serif italic">Browse our watches and add one you love.</p>
-                        <Link href="/shop" className="px-10 py-5 bg-black text-white font-black uppercase tracking-[4px] text-[10px] rounded-full hover:bg-[#D4AF37] hover:text-black transition-all hover:shadow-[0_10px_30px_rgba(212,175,55,0.3)] flex items-center gap-3">
+                        <Link href="/" className="px-10 py-5 bg-black text-white font-black uppercase tracking-[4px] text-[10px] rounded-full hover:bg-[#D4AF37] hover:text-black transition-all hover:shadow-[0_10px_30px_rgba(212,175,55,0.3)] flex items-center gap-3">
                             Browse watches <ArrowRight size={14}/>
                         </Link>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                        {/* CART ITEMS LIST */}
                         <div className="lg:col-span-7 space-y-6">
                             <AnimatePresence>
                                 {cart.map((item, i) => (
-                                    <motion.div 
+                                    <motion.div
+                                        key={item._id || item.id || i}
                                         initial={{opacity:0, scale:0.95}} 
                                         animate={{opacity:1, scale:1}} 
                                         exit={{opacity:0, scale:0.9, x:-20}} 
                                         layout 
-                                        key={`${item._id}-${i}`} // 🚨 FIX: Unique Key with Index
                                         className="bg-white p-6 rounded-[30px] border border-gray-100 flex flex-col md:flex-row items-center gap-6 shadow-sm group hover:border-[#D4AF37]/50 transition-colors"
                                     >
                                         <div className="w-full md:w-32 h-32 bg-gray-50 rounded-2xl p-4 shrink-0 border border-gray-100 relative overflow-hidden">
@@ -75,25 +62,21 @@ function CartPage() {
                                         </div>
                                         <div className="flex-1 text-center md:text-left w-full">
                                             <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[4px] mb-1">{item.brand}</p>
-                                            <h4 className="text-xl font-serif font-bold text-black leading-tight mb-3 line-clamp-1">{item.name}</h4>
+                                            <h4 className="text-xl font-serif font-bold text-black leading-tight mb-3 line-clamp-1">{item.name || item.title}</h4>
                                             <div className="flex justify-between items-center w-full">
                                                 <p className="text-lg font-black font-serif text-black">₹{Number(item.offerPrice || item.price).toLocaleString('en-IN')}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-md">Qty: {item.qty || 1}</p>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-md">Qty: {item.qty || item.quantity || 1}</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => removeItem(i)} className="w-12 h-12 shrink-0 bg-red-50 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center md:ml-2">
-                                            <Trash2 size={18}/>
+<button onClick={() => removeItem(item._id || item.id || "")} className="w-12 h-12 shrink-0 bg-red-50 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center md:ml-2">                                            <Trash2 size={18}/>
                                         </button>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
                         </div>
 
-                        {/* ORDER SUMMARY */}
                         <div className="lg:col-span-5">
-                            <div className="bg-[#050505] text-white p-10 rounded-[40px] shadow-2xl sticky top-32 border border-[#D4AF37]/20 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-40 h-40 bg-[#D4AF37] blur-[80px] opacity-10 pointer-events-none"></div>
-                                
+                            <div className="bg-[#050505] text-white p-10 rounded-[40px] shadow-2xl sticky top-32 border border-[#D4AF37]/20 overflow-hidden">
                                 <h3 className="text-2xl font-serif text-white mb-8 border-b border-white/10 pb-6">Order summary</h3>
                                 
                                 <div className="space-y-4 mb-8 text-sm font-bold text-gray-400">
@@ -110,11 +93,6 @@ function CartPage() {
                                 <button onClick={() => router.push('/checkout')} className="w-full py-6 bg-[#D4AF37] text-black font-black uppercase tracking-[4px] rounded-2xl hover:bg-white hover:shadow-[0_10px_30px_rgba(212,175,55,0.3)] transition-all text-[11px] flex justify-center items-center gap-3">
                                     Proceed to Checkout <ArrowRight size={16}/>
                                 </button>
-                                
-                                <div className="flex items-center justify-center gap-3 mt-8 text-gray-500">
-                                    <ShieldCheck size={16} className="text-gray-400"/>
-                                    <p className="text-[9px] uppercase font-black tracking-widest">Protected checkout</p>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,5 +102,4 @@ function CartPage() {
     );
 }
 
-// 🌟 THE MAGIC FIX: Bypasses Vercel SSR Crash 🌟
 export default dynamic(() => Promise.resolve(CartPage), { ssr: false });

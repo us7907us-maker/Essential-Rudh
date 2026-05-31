@@ -1,41 +1,71 @@
 import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 
+// 🚀 FIX: '@' alias use kiya hai taaki lamba path na likhna pade
+import connectDB from "@/lib/mongodb"; 
+import User from "@/models/usertemp"; 
+
+// 👑 VIP ADMIN EMAILS (Godmode Access)
+const ADMIN_EMAILS = [
+  "us7081569@gmail.com",
+  "us7907us@gmail.com"
+];
+
+// 🚀 FIX: Sirf options export ho rahe hain, NextAuth handler nahi
 export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-
-        if (!adminEmail || !adminPassword) {
-          throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be set for credentials auth.");
-        }
-
-        if (credentials?.email === adminEmail && credentials?.password === adminPassword) {
-          return {
-            id: "1",
-            name: "Admin",
-            email: adminEmail,
-            role: "SUPER_ADMIN",
-            walletPoints: 0,
-            loyaltyTier: "Silver Vault",
-          };
-        }
-        return null;
-      }
-    })
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
-  pages: {
-    signIn: '/login', // Ye 2 form aane wali problem rokega
-  },
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    async signIn({ user }) {
+      await connectDB();
+      // DB mein check karo user hai ya nahi, nahi toh create karo
+      const existingUser = await User.findOne({ email: user.email });
+      if (!existingUser) {
+        await User.create({
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: ADMIN_EMAILS.includes(user.email as string) ? "SUPER_ADMIN" : "USER"
+        });
+      }
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        
+        // 🚀 THE MAGIC: Hardcoded Check for VIPs
+        if (ADMIN_EMAILS.includes(user.email as string)) {
+          token.role = "SUPER_ADMIN";
+        } else {
+          // Normal user ke liye DB wala role ya default USER
+          await connectDB();
+          const dbUser = await User.findOne({ email: user.email });
+          token.role = dbUser?.role || "USER";
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.id as string;
+        
+        // 🚀 THE MAGIC: Session mein role inject karna
+        if (ADMIN_EMAILS.includes(session.user.email as string)) {
+          (session.user as any).role = "SUPER_ADMIN";
+        } else {
+          (session.user as any).role = token.role;
+        }
+      }
+      return session;
+    }
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
