@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import SeoAnalyticsDashboard from '../SeoAnalyticsDashboard';
-import RedirectManager from '../RedirectManager';
+import SeoAnalyticsDashboard from './SeoAnalyticsDashboard';
+import RedirectManager from './RedirectManager';
 
 export default function SeoEngine() {
   return (

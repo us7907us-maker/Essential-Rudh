@@ -3,8 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Layout, X, Trash2, Save, ImageIcon, AlignJustify, ShieldCheck } from 'lucide-react';
-import SeoPanel from '../SeoPanel';
-import ImageSeoPanel from '../ImageSeoPanel';
+import SeoPanel from './SeoPanel';
+import ImageSeoPanel from './ImageSeoPanel';
 
 interface InventoryProps {
     categories: string[];
