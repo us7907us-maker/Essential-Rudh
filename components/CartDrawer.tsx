@@ -82,3 +82,4 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: false, message: "Server Database Error" }, { status: 500 });
     }
 } 
+export default CartDrawer;
