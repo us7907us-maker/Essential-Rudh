@@ -17,22 +17,22 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 // 🚀 BATCH 1 MODULAR COMPONENTS 
-import DashboardTab from '@/components/godmode/tabs/DashboardTab';
-import InventoryTab from '@/components/godmode/tabs/InventoryTab';
-import OrderTrackerTab from '@/components/godmode/tabs/OrderTrackerTab';
-import SeoEngineTab from '@/components/godmode/tabs/SeoEngineTab';
-import LegalPagesTab from '@/components/godmode/tabs/LegalPagesTab';
-import ReviewsTab from '@/components/godmode/tabs/ReviewsTab';
-import SalesForceTab from '@/components/godmode/tabs/SalesForceTab';
-import AiEngineTab from '@/components/godmode/tabs/AiEngineTab';
-import SecurityTab from '@/components/godmode/tabs/SecurityTab';
-import WithdrawalTab from '@/components/godmode/tabs/WithdrawalTab';
-import StatCard from '@/components/godmode/tabs/StatCard';
-import SeoPanel from '@/components/godmode/tabs/SeoPanel';
+import DashboardTab from '@/components/godmode/tabs_temp/DashboardTab';
+import InventoryTab from '@/components/godmode/tabs_temp/InventoryTab';
+import OrderTrackerTab from '@/components/godmode/tabs_temp/OrderTrackerTab';
+import SeoEngineTab from '@/components/godmode/tabs_temp/SeoEngineTab';
+import LegalPagesTab from '@/components/godmode/tabs_temp/LegalPagesTab';
+import ReviewsTab from '@/components/godmode/tabs_temp/ReviewsTab';
+import SalesForceTab from '@/components/godmode/tabs_temp/SalesForceTab';
+import AiEngineTab from '@/components/godmode/tabs_temp/AiEngineTab';
+import SecurityTab from '@/components/godmode/tabs_temp/SecurityTab';
+import WithdrawalTab from '@/components/godmode/tabs_temp/WithdrawalTab';
+import StatCard from '@/components/godmode/tabs_temp/StatCard';
+import SeoPanel from '@/components/godmode/tabs_temp/SeoPanel';
 
-import SeoAnalyticsDashboard from '@/components/godmode/tabs/SeoAnalyticsDashboard';
-import RedirectManager from '@/components/godmode/tabs/RedirectManager';
-import ImageSeoPanel from '@/components/godmode/tabs/ImageSeoPanel';
+import SeoAnalyticsDashboard from '@/components/godmode/tabs_temp/SeoAnalyticsDashboard';
+import RedirectManager from '@/components/godmode/tabs_temp/RedirectManager';
+import ImageSeoPanel from '@/components/godmode/tabs_temp/ImageSeoPanel';
 
 const MODULES = [
   { id: 'FULL_DASHBOARD', icon: BarChart3, label: 'Main Dashboard' },
