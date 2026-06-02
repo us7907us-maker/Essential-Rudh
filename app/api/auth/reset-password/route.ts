@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import User from '@/models/usertemp'; // Model path zaroor check kar lena
-import bcrypt from 'bcryptjs'; // Password secure (hash) karne ke liye
+import User from '@/models/usertemp';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
     try {
@@ -14,21 +14,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
         }
 
-        // 1. OTP Check karo
-        if (user.resetOtp !== otp) {
-            return NextResponse.json({ success: false, message: "Invalid OTP! Please try again." }, { status: 400 });
+        // 🚀 BULLETPROOF COMPARISON: String mein convert karke check karo
+        if (String(user.resetOtp).trim() !== String(otp).trim()) {
+            return NextResponse.json({ success: false, message: "Invalid OTP! Please check your email again." }, { status: 400 });
         }
 
-        // 2. OTP Expiry Check karo (10 mins wali condition)
+        // Expiry check (Buffer time ke saath)
         if (new Date() > new Date(user.otpExpiry)) {
-            return NextResponse.json({ success: false, message: "OTP has expired. Please request a new one." }, { status: 400 });
+            return NextResponse.json({ success: false, message: "OTP has expired!" }, { status: 400 });
         }
 
-        // 3. Naya Password Secure karo aur Save karo
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
         
-        // 4. Purana OTP delete kar do taaki koi dobara use na kar paye
         user.resetOtp = undefined;
         user.otpExpiry = undefined;
         await user.save();

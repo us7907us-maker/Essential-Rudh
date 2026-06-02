@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Key, Lock, ArrowRight, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Mail, Key, Lock, ArrowRight, RefreshCw, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const [step, setStep] = useState<1 | 2>(1); // Step 1: Email, Step 2: OTP & New Password
@@ -20,7 +20,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: { isOpen: boole
             const res = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: email.trim().toLowerCase() }) // Trimming and lowercasing
             });
             const data = await res.json();
             if (data.success) {
@@ -44,11 +44,21 @@ export default function ForgotPasswordModal({ isOpen, onClose }: { isOpen: boole
             const res = await fetch('/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp, newPassword })
+                // Sending clean, trimmed data
+                body: JSON.stringify({ 
+                    email: email.trim().toLowerCase(), 
+                    otp: otp.trim(), 
+                    newPassword 
+                })
             });
             const data = await res.json();
             if (data.success) {
                 alert("Password changed successfully! You can now login.");
+                // Reset state before closing
+                setEmail('');
+                setOtp('');
+                setNewPassword('');
+                setStep(1);
                 onClose(); // Modal band kardo
             } else {
                 alert(data.message);
@@ -80,7 +90,13 @@ export default function ForgotPasswordModal({ isOpen, onClose }: { isOpen: boole
                     <div className="space-y-6">
                         <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                            <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 pl-12 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors" />
+                            <input 
+                                type="email" 
+                                placeholder="Email Address" 
+                                value={email} 
+                                onChange={(e) => setEmail(e.target.value)} 
+                                className="w-full p-4 pl-12 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors" 
+                            />
                         </div>
                         <button onClick={handleSendOtp} disabled={isLoading} className="w-full py-4 bg-[#D4AF37] text-black hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex justify-center items-center gap-2">
                             {isLoading ? <RefreshCw size={16} className="animate-spin"/> : <>Send OTP <ArrowRight size={16}/></>}
@@ -90,15 +106,40 @@ export default function ForgotPasswordModal({ isOpen, onClose }: { isOpen: boole
                     <div className="space-y-4">
                         <div className="relative">
                             <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                            <input type="text" placeholder="6-Digit OTP" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full p-4 pl-12 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white font-mono transition-colors tracking-[0.5em]" maxLength={6} />
+                            <input 
+                                type="text" 
+                                placeholder="6-Digit OTP" 
+                                value={otp} 
+                                // Auto-remove any accidental spaces or non-alphanumeric chars
+                                onChange={(e) => setOtp(e.target.value.replace(/\s/g, ''))} 
+                                className="w-full p-4 pl-12 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white font-mono transition-colors tracking-[0.5em]" 
+                                maxLength={6} 
+                            />
                         </div>
                         <div className="relative mb-6">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                            <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-4 pl-12 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors" />
+                            <input 
+                                type="password" 
+                                placeholder="New Password" 
+                                value={newPassword} 
+                                onChange={(e) => setNewPassword(e.target.value)} 
+                                className="w-full p-4 pl-12 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors" 
+                            />
                         </div>
-                        <button onClick={handleResetPassword} disabled={isLoading} className="w-full py-4 bg-[#D4AF37] text-black hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex justify-center items-center gap-2">
-                            {isLoading ? <RefreshCw size={16} className="animate-spin"/> : "Secure New Password"}
-                        </button>
+                        
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => setStep(1)} 
+                                disabled={isLoading}
+                                className="px-4 bg-[#141414] border border-gray-800 text-gray-400 hover:text-white rounded-xl transition-all flex items-center justify-center"
+                                title="Back to Email"
+                            >
+                                <ArrowLeft size={16} />
+                            </button>
+                            <button onClick={handleResetPassword} disabled={isLoading} className="flex-1 py-4 bg-[#D4AF37] text-black hover:bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex justify-center items-center gap-2">
+                                {isLoading ? <RefreshCw size={16} className="animate-spin"/> : "Secure New Password"}
+                            </button>
+                        </div>
                     </div>
                 )}
             </motion.div>
