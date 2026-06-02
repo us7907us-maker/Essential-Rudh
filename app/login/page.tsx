@@ -6,12 +6,17 @@ import Link from 'next/link';
 import { ArrowLeft, Lock, User, Phone, ShieldCheck, ArrowRight, RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+// 👇 1. ForgotPasswordModal IMPORT KIYA
+import ForgotPasswordModal from '@/components/ForgotPasswordModal';
+
 export default function LoginPortal() {
 
-    
     const router = useRouter();
     const [isLogin, setIsLogin] = useState(true); 
     const [isLoading, setIsLoading] = useState(false);
+    
+    // 👇 2. MODAL KE LIYE STATE BANAYI
+    const [showForgotModal, setShowForgotModal] = useState(false);
     
     // Form States
     const [name, setName] = useState('');
@@ -43,7 +48,6 @@ export default function LoginPortal() {
     e.preventDefault();
 
     if (!name || !phone || !password) return alert("Please fill all details.");
-    // ... baaki poora code waisa hi rahega
         
         setIsLoading(true);
         try {
@@ -139,7 +143,6 @@ export default function LoginPortal() {
                         <div className="h-px bg-gray-100 flex-1"></div>
                     </div>
 
-                    {/* 🚀 CRASH-PROOF FORM (Removed AnimatePresence to prevent unmounting bugs) */}
                     <form onSubmit={isLogin ? handleManualLogin : handleRegister} className="space-y-4">
                         {!isLogin && (
                             <div className="relative">
@@ -157,7 +160,16 @@ export default function LoginPortal() {
                         </div>
 
                         {isLogin && (
-                            <div className="text-right"><button type="button" className="text-[10px] text-gray-400 hover:text-black font-bold uppercase tracking-widest">Forgot password?</button></div>
+                            <div className="text-right">
+                                {/* 👇 3. FORGOT PASSWORD CLICK HANDLER ADD KIYA */}
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowForgotModal(true)} 
+                                    className="text-[10px] text-gray-400 hover:text-black font-bold uppercase tracking-widest"
+                                >
+                                    Forgot password?
+                                </button>
+                            </div>
                         )}
 
                         <button type="submit" disabled={isLoading} className="w-full py-5 mt-4 bg-black text-white font-bold uppercase tracking-[4px] text-[10px] rounded-2xl hover:bg-[#D4AF37] hover:text-black transition-all flex justify-center items-center gap-3 disabled:opacity-70 group shadow-xl active:scale-[0.98]">
@@ -184,6 +196,13 @@ export default function LoginPortal() {
             <footer className="p-10 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[5px] text-gray-300">© 2026 Essential Rush</p>
             </footer>
+
+            {/* 👇 4. MODAL RENDER KIYA (Hamesha background pe ready rahega) */}
+            <ForgotPasswordModal 
+                isOpen={showForgotModal} 
+                onClose={() => setShowForgotModal(false)} 
+            />
+
         </div>
     );
 }

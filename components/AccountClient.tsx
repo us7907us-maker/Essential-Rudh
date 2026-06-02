@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import SmartTrackButton from './SmartTrackButton';
+import CancelOrderButton from "@/components/CancelOrderButton"; // 🚀 BUTTON IMPORTED HERE
 import Link from "next/link";
 import { 
   LogOut, History, Sparkles, User, MapPin, Wallet, Heart, 
@@ -78,7 +79,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
     exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.3 } }
   };
 
-  // 🚀 FIX: TypeScript error ke liye ': any' laga diya
   const modalVariants: any = {
     hidden: { opacity: 0, scale: 0.95, y: 20 },
     visible: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 25 } },
@@ -269,7 +269,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
   return (
     <div className="min-h-screen bg-[#F7F7F7] text-[#050505] font-sans pb-24 lg:pb-0 relative">
       
-      {/* Dynamic Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div initial={{ opacity: 0, y: -50, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }} exit={{ opacity: 0, y: -50, x: "-50%" }} className="fixed top-8 left-1/2 z-[200] bg-[#0A0A0A] border border-[#D4AF37]/30 text-white px-6 py-4 rounded-full flex items-center gap-4 shadow-2xl backdrop-blur-md">
@@ -279,7 +278,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
         )}
       </AnimatePresence>
 
-      {/* 🚀 WITHDRAWAL MODAL */}
       <AnimatePresence>
         {showWithdrawModal && (
           <div className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -294,7 +292,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                 </div>
               </div>
 
-              {/* Payment Method Selector */}
               <div className="flex gap-4 mb-6">
                   <button onClick={() => setWithdrawMethod('upi')} className={`flex-1 p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${withdrawMethod === 'upi' ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]' : 'border-gray-800 text-gray-400 hover:border-gray-600'}`}>
                       <CreditCard size={24}/> <span className="text-[10px] font-black uppercase tracking-widest">UPI ID</span>
@@ -304,7 +301,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                   </button>
               </div>
 
-              {/* Forms */}
               <div className="space-y-4 mb-8">
                 {withdrawMethod === 'upi' ? (
                     <input type="text" placeholder="Enter UPI ID (e.g., name@okhdfcbank)" value={withdrawDetails.upiId} onChange={(e) => setWithdrawDetails({...withdrawDetails, upiId: e.target.value})} className="w-full p-5 bg-[#141414] border border-gray-800 rounded-xl outline-none focus:border-[#D4AF37] text-white transition-colors font-mono text-sm" />
@@ -325,7 +321,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
         )}
       </AnimatePresence>
 
-      {/* 🚀 REFERRAL HOW-IT-WORKS MODAL */}
       <AnimatePresence>
         {showReferralModal && (
           <div className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -387,7 +382,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
         
-        {/* Desktop Sidebar */}
         <aside className="hidden lg:block lg:col-span-3 space-y-2 sticky top-32 self-start">
           <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] mb-8 text-center relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#D4AF37] to-black"></div>
@@ -406,16 +400,13 @@ export default function AccountClient({ initialData, session }: AccountClientPro
           </div>
         </aside>
 
-        {/* Main Content Area */}
         <main className="lg:col-span-9">
           <AnimatePresence mode="wait">
             
-            {/* 1. OVERVIEW */}
             {activeTab === "overview" && (
               <motion.div key="overview" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-8">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {/* Luxury Wallet Card */}
                   <div className="xl:col-span-2 bg-gradient-to-br from-[#0A0A0A] to-[#1A1A1A] p-10 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.2)] relative overflow-hidden flex flex-col justify-between min-h-[220px]">
                     <div className="absolute -right-10 -bottom-10 text-white/5 rotate-12"><Wallet size={200}/></div>
                     <div className="relative z-10 flex justify-between items-start">
@@ -430,7 +421,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                     </div>
                   </div>
 
-                  {/* Summary Cards */}
                   <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 flex flex-col justify-center items-center text-center">
                     <div className="w-16 h-16 bg-gray-50 text-black rounded-2xl flex items-center justify-center mb-4"><Package size={24}/></div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Acquisitions</p>
@@ -438,7 +428,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                   </div>
                 </div>
 
-                {/* 🚀 ESSENTIAL NETWORK CARD */}
                 <div className="bg-[#0A0A0A] text-[#D4AF37] p-8 md:p-10 rounded-[2.5rem] border border-[#D4AF37]/20 shadow-[0_10px_30px_rgba(212,175,55,0.1)] relative overflow-hidden group flex flex-col justify-center">
                     <div className="absolute -right-6 -bottom-6 text-white/5 rotate-12 group-hover:scale-110 transition-transform duration-700">
                         <Gift size={150}/>
@@ -451,7 +440,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                         </div>
                         
                         <div className="flex flex-col gap-3 w-full md:w-auto shrink-0 z-10">
-                            {/* LINK WALA BOX */}
                             <div className="flex items-center justify-between bg-white/5 p-2 pl-4 rounded-2xl border border-white/10 w-full min-w-[280px]">
                                 <div className="truncate text-sm text-gray-400 font-mono">
                                     .../?ref=<span className="text-white font-bold">{initialData?.myReferralCode || "CODE"}</span>
@@ -461,7 +449,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                                 </button>
                             </div>
                             
-                            {/* NEW WITHDRAW BUTTON */}
                             <button onClick={handleWithdrawClick} className="w-full py-4 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex justify-center items-center gap-2">
                                 Withdraw as Cash (Min ₹500)
                             </button>
@@ -469,7 +456,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                     </div>
                 </div>
 
-                {/* Recent Orders Section */}
+                {/* 🚀 CANCEL BUTTON PLACED HERE IN OVERVIEW TAB */}
                 <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100">
                   <div className="flex items-center justify-between mb-8">
                     <h4 className="text-2xl font-serif font-black tracking-tight">Recent Activity</h4>
@@ -490,6 +477,9 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                                 <div className="flex w-full gap-2">
                                   <span className={`px-4 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest w-full sm:w-auto text-center flex items-center justify-center ${o.status === 'DELIVERED' ? 'bg-green-50 text-green-700' : 'bg-[#0A0A0A] text-[#D4AF37]'}`}>{o.status || 'PENDING'}</span>
                                   <SmartTrackButton orderId={o.orderId} email={session?.user?.email || ""} />
+                                  
+                                  {/* 👇 BUTTON ADDED */}
+                                  <CancelOrderButton orderId={o._id.toString()} status={o.status || 'Pending'} />
                                 </div>
                             </div>
                           </div>
@@ -505,7 +495,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-             {/* 2. PROFILE */}
             {activeTab === "profile" && (
               <motion.div key="profile" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
                 <h3 className="text-3xl font-serif italic font-black tracking-tight mb-8">Personal Details</h3>
@@ -537,7 +526,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 3. ORDERS */}
+            {/* 🚀 CANCEL BUTTON PLACED HERE IN ORDERS TAB */}
             {activeTab === "orders" && (
               <motion.div key="orders" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                 {orders.length > 0 ? orders.map((order: any) => (
@@ -558,8 +547,11 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                         <span className={`px-4 py-3 flex-1 flex items-center justify-center rounded-xl text-[9px] font-black uppercase tracking-widest ${order.status === 'DELIVERED' ? 'bg-green-50 text-green-700' : 'bg-black text-[#D4AF37]'}`}>{order.status || 'PENDING'}</span>
                         <motion.button whileTap={{ scale: 0.95 }} onClick={() => notify("Downloading PDF Invoice...")} className="px-6 py-3 flex-1 flex items-center justify-center rounded-xl border border-gray-200 hover:border-black text-[10px] font-black uppercase tracking-widest transition-colors gap-2"><Download size={14}/> Invoice</motion.button>
                       </div>
-                      <div className="w-full">
+                      <div className="flex w-full gap-2">
                         <SmartTrackButton orderId={order.orderId} email={session?.user?.email || ""} />
+                        
+                        {/* 👇 BUTTON ADDED */}
+                        <CancelOrderButton orderId={order._id.toString()} status={order.status || 'Pending'} />
                       </div>
                     </div>
                   </div>
@@ -574,7 +566,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 4. ADDRESSES */}
             {activeTab === "addresses" && (
               <motion.div key="addresses" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-8">
                 <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
@@ -630,7 +621,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 6. WISHLIST */}
             {activeTab === "wishlist" && (
               <motion.div key="wishlist" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -661,7 +651,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 7. OFFERS */}
             {activeTab === "offers" && (
               <motion.div key="offers" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -686,7 +675,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 8. SECURITY */}
             {activeTab === "security" && (
               <motion.div key="security" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                 <div className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-sm max-w-2xl">
@@ -704,7 +692,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* 9. SUPPORT */}
             {activeTab === "support" && (
               <motion.div key="support" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                 <div className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-sm">
@@ -737,7 +724,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                             {f.q}
                             <ChevronRight size={16} className="text-gray-400 group-open:rotate-90 transition-transform"/>
                         </summary>
-                        {/* 🚀 FIX: pt-0 hata diya taaki Tailwind conflict warning chali jaye */}
                         <div className="px-6 pb-6 text-sm text-gray-600 leading-relaxed border-t border-gray-100/50 mt-2 pt-4">
                             {f.a}
                         </div>
@@ -748,7 +734,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
               </motion.div>
             )}
 
-            {/* Default Catch (Wallet if missing implementation) */}
             {activeTab === "wallet" && (
                 <motion.div key="wallet" variants={tabVariants} initial="hidden" animate="visible" exit="exit" className="bg-white p-12 rounded-[2.5rem] border border-gray-100 text-center">
                     <Wallet size={48} className="mx-auto text-gray-200 mb-4" />
@@ -761,7 +746,6 @@ export default function AccountClient({ initialData, session }: AccountClientPro
         </main>
       </div>
       
-      {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-gray-100 p-2 pb-safe flex justify-around items-center lg:hidden z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         {[{ key: "overview", icon: Sparkles, label: "Home" }, { key: "orders", icon: Package, label: "Orders" }, { key: "wishlist", icon: Heart, label: "Saved" }, { key: "profile", icon: User, label: "Profile" }].map((t) => (
           <button key={t.key} onClick={() => setActiveTab(t.key as TabType)} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeTab === t.key ? "text-[#D4AF37]" : "text-gray-400 hover:text-black"}`}>
