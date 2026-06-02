@@ -702,7 +702,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4"><HelpCircle size={24} className="text-[#D4AF37]"/></div>
                           <h4 className="font-serif font-black text-xl mb-2">Live Assistance</h4>
                           <p className="text-sm text-gray-500 mb-6">Our experts are available 24/7 for bespoke inquiries.</p>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => window.open('https://wa.me/918700000000', '_blank')} className="px-8 py-4 bg-black text-[#D4AF37] rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg w-full">Chat on WhatsApp</motion.button>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => window.open('https://wa.me/91799', '_blank')} className="px-8 py-4 bg-black text-[#D4AF37] rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg w-full">Chat on WhatsApp</motion.button>
                       </div>
                       <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 flex flex-col items-center text-center">
                           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4"><HelpCircle size={24} className="text-[#D4AF37]"/></div>
@@ -715,20 +715,45 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                   <h4 className="text-xl font-serif font-black tracking-tight mb-6">Frequently Asked Questions</h4>
                   <div className="space-y-4">
                     {[
-                      { q: "How is the authenticity verified?", a: "Every timepiece undergoes a rigorous 3-step authentication process by our certified horologists and comes with a digital Certificate of Authenticity." },
-                      { q: "What are the shipping timelines?", a: "We provide complimentary insured global shipping. Domestic deliveries take 2-4 business days, while international acquisitions take 5-10 business days." },
-                      { q: "Do you accept cryptocurrency?", a: "Yes, we accept Bitcoin and Ethereum for select high-value acquisitions. Please contact the concierge for the secure payment gateway link." },
-                    ].map((f, i) => (
-                      <details key={i} className="group bg-gray-50 rounded-[1.5rem] border border-gray-100 overflow-hidden">
-                        <summary className="cursor-pointer font-black text-sm p-6 flex justify-between items-center outline-none">
-                            {f.q}
-                            <ChevronRight size={16} className="text-gray-400 group-open:rotate-90 transition-transform"/>
-                        </summary>
-                        <div className="px-6 pb-6 text-sm text-gray-600 leading-relaxed border-t border-gray-100/50 mt-2 pt-4">
-                            {f.a}
-                        </div>
-                      </details>
-                    ))}
+  { 
+    q: "Are your timepieces authentic?", 
+    a: "Yes, every timepiece listed on Essential-Rudh is 100% authentic. We take great pride in our curation process, ensuring that every watch meets the highest standards of luxury horology." 
+  },
+  { 
+    q: "What are the shipping timelines?", 
+    a: "We provide complimentary insured global shipping. Domestic deliveries take 2-4 business days, while international acquisitions take 5-10 business days." 
+  },
+  { 
+    q: "Do you accept cryptocurrency?", 
+    a: "Yes, we accept Bitcoin and Ethereum for select high-value acquisitions. Please contact the concierge for the secure payment gateway link." 
+  },
+  { 
+    q: "Do you provide a warranty?", 
+    a: "Yes, all pre-owned and new timepieces come with a dedicated warranty period to ensure your peace of mind. Specific details are mentioned on the individual product pages." 
+  },
+  { 
+    q: "Can I cancel my order?", 
+    a: "Yes, you can cancel your order within 24 hours of purchase, provided it has not already been dispatched. You can do this easily through your account dashboard." 
+  },
+  { 
+    q: "Why does my account say 'Vault is secure'?", 
+    a: "This is a part of our security protocol to ensure your data and personal information remain encrypted and protected at all times. If you face any issues, our 'Restore Session' button will get you back in." 
+  },
+  { 
+    q: "How do I reset my password?", 
+    a: "Click on the 'Forgot Password' link on the login page. You will receive an OTP on your registered email to verify your identity and set a new, secure password." 
+  }
+].map((f, i) => (
+  <details key={i} className="group bg-gray-50 rounded-[1.5rem] border border-gray-100 overflow-hidden">
+    <summary className="p-6 font-semibold cursor-pointer list-none flex justify-between items-center text-[#0A0A0A]">
+      {f.q}
+      <span className="group-open:rotate-180 transition-transform">▼</span>
+    </summary>
+    <p className="px-6 pb-6 text-gray-600 text-sm leading-relaxed">
+      {f.a}
+    </p>
+  </details>
+))}
                   </div>
                 </div>
               </motion.div>
