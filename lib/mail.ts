@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-// 1. MAIN EMAIL FUNCTION (Sab emails yahi bhejega)
+// 1. MAIN EMAIL FUNCTION
 export const sendEmail = async (to: string, subject: string, html: string) => {
     try {
         const transporter = nodemailer.createTransport({
@@ -25,8 +25,8 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
     }
 };
 
-// 2. MISSING FUNCTION: RAZORPAY WEBHOOK KE LIYE (Order Confirmed)
-export const sendOrderConfirmationEmail = async (email: string, data?: any, extra?: any) => {
+// 2. RAZORPAY WEBHOOK (Added ...args so it never crashes)
+export const sendOrderConfirmationEmail = async (email: string, ...args: any[]) => {
     const html = `
         <div style="font-family: Arial, sans-serif; padding: 40px 20px; background-color: #0A0A0A; color: #ffffff; text-align: center;">
             <h2 style="color: #D4AF37; font-style: italic;">Essential Rush</h2>
@@ -38,8 +38,8 @@ export const sendOrderConfirmationEmail = async (email: string, data?: any, extr
     await sendEmail(email, "Order Confirmed - Essential Rush", html);
 };
 
-// 3. MISSING FUNCTION: REFERRAL REWARD KE LIYE
-export const sendReferralRewardEmail = async (email: string, data?: any, extra?: any) => {
+// 3. REFERRAL REWARD (Added ...args to accept name, amount, etc. without error)
+export const sendReferralRewardEmail = async (email: string, ...args: any[]) => {
     const html = `
         <div style="font-family: Arial, sans-serif; padding: 40px 20px; background-color: #0A0A0A; color: #ffffff; text-align: center;">
             <h2 style="color: #D4AF37; font-style: italic;">Essential Rush</h2>

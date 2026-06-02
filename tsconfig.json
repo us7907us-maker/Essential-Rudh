@@ -14,7 +14,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -22,12 +22,23 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@/components/*": ["./components/*"],
-      "@/models/*": ["./models/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/app/api/*": ["./app/api/*"]
-    }
+      "@/*": [
+        "./*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/models/*": [
+        "./models/*"
+      ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+      "@/app/api/*": [
+        "./app/api/*"
+      ]
+    },
+    "target": "ES2017"
   },
   "include": [
     "next-env.d.ts",
