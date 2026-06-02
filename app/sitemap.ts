@@ -1,3 +1,7 @@
+// Sabse upar line 1 par ye chipka de
+export const dynamic = "force-dynamic";
+
+// Baaki tera code jaisa hai waisa hi rahega...
 import { MetadataRoute } from 'next';
 import mongoose from 'mongoose';
 
