@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// 🚀 ADDED: useChat hook for J.A.R.V.I.S AI
+import { useChat } from 'ai/react';
 
 import {
   BarChart3, Package, BrainCircuit, Landmark, Users, RefreshCcw, Trash2, Layout, Video,
@@ -35,6 +37,8 @@ import RedirectManager from '@/components/godmode/tabs_temp/RedirectManager';
 import ImageSeoPanel from '@/components/godmode/tabs_temp/ImageSeoPanel';
 
 const MODULES = [
+  // 🚀 ADDED: J.A.R.V.I.S. AI Terminal at the top
+  { id: 'GODMODE_AI', icon: Terminal, label: 'J.A.R.V.I.S. Terminal' },
   { id: 'FULL_DASHBOARD', icon: BarChart3, label: 'Main Dashboard' },
   { id: 'INVENTORY', icon: Package, label: 'Products & Inventory' },
   { id: 'ORDER_TRACKER', icon: Truck, label: 'Manage Orders' },
@@ -53,7 +57,6 @@ const MODULES = [
 
 const DEFAULT_GALLERY: string[] = [];
 
-// 🚀 FIX: Added onUploadStateChange to communicate with parent
 const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video", onUploadStateChange }: any) => {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -63,7 +66,7 @@ const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video", onUpl
   const handleUpload = async (file: File) => {
     if (!file) return;
     setUploading(true);
-    if (onUploadStateChange) onUploadStateChange(true); // 🚀 Tell parent upload started
+    if (onUploadStateChange) onUploadStateChange(true); 
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -76,7 +79,7 @@ const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video", onUpl
     } catch (e) { alert("Upload failed. Is your server running?"); }
     finally { 
       setUploading(false); 
-      if (onUploadStateChange) onUploadStateChange(false); // 🚀 Tell parent upload finished
+      if (onUploadStateChange) onUploadStateChange(false); 
     }
   };
 
@@ -103,8 +106,30 @@ const PremiumUploadNode = ({ onUploadSuccess, placeholder = "Image/Video", onUpl
 function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  
+  // 🚀 J.A.R.V.I.S AI HOOK INITIALIZATION
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: '/api/godmode-chat',
+    initialMessages: [
+      {
+        id: '1',
+        role: 'assistant',
+        content: 'System Online. Welcome back, Boss. Essential Rush Godmode activated. What updates do you need today?',
+      },
+    ],
+  });
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll AI Terminal
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Existing States
   const [isImageUploading, setIsImageUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState('FULL_DASHBOARD');
+  const [activeTab, setActiveTab] = useState('GODMODE_AI'); // Default to AI Terminal
   const [dashboardView, setDashboardView] = useState<'orders' | 'abandoned'>('orders');
   const [isSyncing, setIsSyncing] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -268,7 +293,6 @@ function AdminDashboard() {
     } catch (e) { alert("Failed to add review."); } finally { setIsSyncing(false); }
   };
 
-  // 🚀 FIX: Updated Payload Logic and Upload Checks
   const handleSaveProduct = async () => {
     if (!watchForm.name.trim() || !watchForm.price.toString().trim() || !watchForm.imageUrl.trim()) {
       return alert("⚠️ Missing Fields! Product Name, Base Price, and Main Image URL are mandatory.");
@@ -284,7 +308,6 @@ function AdminDashboard() {
       const tagsArray = watchForm.seoTags.split(',').map(s => s.trim()).filter(s => s);
       const additionalImages = watchForm.images.filter(img => typeof img === 'string' && img.trim() !== "");
       
-      // 🚀 THE MAGIC FIX: Combine Main Image + Additional Images into one array
       const allImages = watchForm.imageUrl ? [watchForm.imageUrl, ...additionalImages] : additionalImages;
 
       const generatedSlug = watchForm.seo.slug || watchForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
@@ -293,7 +316,7 @@ function AdminDashboard() {
       const finalProduct = {
         name: watchForm.name, slug: generatedSlug, sku: generatedSku, brand: watchForm.brand, category: watchForm.category,
         price: Number(watchForm.price) || 0, offerPrice: Number(watchForm.offerPrice) || Number(watchForm.price) || 0, stock: Number(watchForm.stock) || 0,
-        images: allImages, // 🚀 Perfect Array mapping for schema
+        images: allImages,
         videoUrl: watchForm.videoUrl, model3DUrl: watchForm.model3DUrl,
         description: watchForm.description, tags: tagsArray, priority: Number(watchForm.priority) || 0, badge: watchForm.badge, amazonDetails: validAmazonDetails,
         vipVaultKey: watchForm.vipVaultKey.toUpperCase(), vipDiscount: Number(watchForm.vipDiscount) || 0, transitFee: Number(watchForm.transitFee) || 0, taxPercentage: Number(watchForm.taxPercentage) || 18, taxInclusive: watchForm.taxInclusive,
@@ -310,7 +333,7 @@ function AdminDashboard() {
           vipVaultKey: '', vipDiscount: '', transitFee: '0', taxPercentage: '18', taxInclusive: true,
           seo: { metaTitle: '', metaDescription: '', focusKeyword: '', slug: '', noindex: false, imageAltTexts: {} }
         });
-        window.location.reload(); // 🚀 Force UI sync
+        window.location.reload(); 
       } else { alert(`Error saving product: ${data.error || 'Check fields and try again'}`); }
     } catch (e: any) { alert(`Network Error! ${e.message}`); console.error('Product Save Error:', e); }
     finally { setIsSyncing(false); }
@@ -591,9 +614,9 @@ function AdminDashboard() {
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
           {MODULES.map(m => (
-            <button key={m.id} onClick={() => setActiveTab(m.id)} className={`w-full flex items-center justify-between px-4 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group ${activeTab === m.id ? 'bg-[#D4AF37] text-black' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
+            <button key={m.id} onClick={() => setActiveTab(m.id)} className={`w-full flex items-center justify-between px-4 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group ${activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'bg-green-900/30 border border-green-500/50 text-green-400' : 'bg-[#D4AF37] text-black') : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
               <div className="flex items-center gap-3">
-                <m.icon size={16} className={activeTab === m.id ? 'text-black' : 'group-hover:text-[#D4AF37] transition-colors'} />
+                <m.icon size={16} className={activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'text-green-400 animate-pulse' : 'text-black') : 'group-hover:text-white transition-colors'} />
                 {m.label}
               </div>
               {activeTab === m.id && <ChevronRight size={14} />}
@@ -613,10 +636,10 @@ function AdminDashboard() {
             <button
               key={m.id}
               onClick={() => setActiveTab(m.id)}
-              className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all min-h-[44px] ${activeTab === m.id ? 'bg-[#D4AF37] text-black shadow-lg' : 'bg-white/5 text-gray-400 border border-white/10'
+              className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all min-h-[44px] ${activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'bg-green-900/30 border border-green-500 text-green-400' : 'bg-[#D4AF37] text-black shadow-lg') : 'bg-white/5 text-gray-400 border border-white/10'
                 }`}
             >
-              <m.icon size={14} className={activeTab === m.id ? 'text-black' : 'text-[#D4AF37]'} />
+              <m.icon size={14} className={activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'text-green-400' : 'text-black') : 'text-[#D4AF37]'} />
               {m.label}
             </button>
           ))}
@@ -624,7 +647,7 @@ function AdminDashboard() {
 
         <header className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-10 border-b border-white/10 pb-6 gap-4">
           <div>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-white">
+            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-serif ${activeTab === 'GODMODE_AI' ? 'text-green-500 font-mono tracking-widest uppercase' : 'text-white'}`}>
               {MODULES.find(m => m.id === activeTab)?.label}
             </h2>
           </div>
@@ -640,6 +663,81 @@ function AdminDashboard() {
         </header>
 
         <AnimatePresence mode="wait">
+
+          {/* ================= 0. J.A.R.V.I.S. TERMINAL ================= */}
+          {activeTab === 'GODMODE_AI' && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} key="jarvis" className="flex flex-col xl:flex-row gap-6 w-full">
+              {/* LEFT PANEL - SITE STATS */}
+              <div className="w-full xl:w-1/3 bg-[#0a0a0a] border border-green-900/50 rounded-[20px] p-6 shadow-[0_0_15px_rgba(0,255,0,0.05)] h-max">
+                <h1 className="text-xl md:text-2xl font-bold text-white mb-6 tracking-widest border-b border-green-900/50 pb-4">
+                  GODMODE <span className="text-xs text-green-500 align-top font-mono">v1.0</span>
+                </h1>
+                <div className="space-y-4 font-mono">
+                  <div className="bg-black p-4 rounded-xl border border-green-900/30">
+                    <p className="text-gray-500 text-[10px] uppercase tracking-widest">LIVE VISITORS</p>
+                    <p className="text-3xl text-white">124</p>
+                  </div>
+                  <div className="bg-black p-4 rounded-xl border border-green-900/30">
+                    <p className="text-gray-500 text-[10px] uppercase tracking-widest">IDENTIFIED CLIENTS</p>
+                    <p className="text-3xl text-white">{leads.length}</p>
+                  </div>
+                  <div className="bg-black p-4 rounded-xl border border-green-900/30">
+                    <p className="text-gray-500 text-[10px] uppercase tracking-widest">SYSTEM STATUS</p>
+                    <p className="text-sm md:text-lg text-green-400 flex items-center gap-2"><Activity size={16} className="animate-pulse shrink-0" /> All Systems Nominal</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT PANEL - AI TERMINAL */}
+              <div className="w-full xl:w-2/3 bg-[#0a0a0a] border border-green-900/50 rounded-[20px] flex flex-col h-[70vh] min-h-[500px] shadow-[0_0_20px_rgba(0,255,0,0.1)] overflow-hidden font-mono">
+                <div className="bg-green-900/20 p-4 border-b border-green-900/50 flex items-center justify-between">
+                  <span className="text-[10px] md:text-xs tracking-widest text-green-500 font-bold flex items-center gap-2"><Terminal size={16} /> AI ASSISTANT TERMINAL</span>
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                </div>
+
+                <div ref={chatRef} className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 custom-scrollbar bg-black/50">
+                  {messages.map((m:any) => (
+                    <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[90%] md:max-w-[85%] p-4 rounded-xl text-xs md:text-sm leading-relaxed ${
+                        m.role === 'user' 
+                          ? 'bg-green-900/30 border border-green-700/50 text-white' 
+                          : 'bg-black/80 border border-green-900/50 text-green-400 shadow-[0_0_10px_rgba(0,255,0,0.05)]'
+                      }`}>
+<span className="text-[9px] md:text-[10px] tracking-widest uppercase opacity-50 mb-2 font-bold flex items-center gap-2">   
+                         {m.role === 'user' ? <Fingerprint size={12}/> : <Cpu size={12}/>}
+                          {m.role === 'user' ? 'Boss' : 'J.A.R.V.I.S.'}
+                        </span>
+                        <div className="whitespace-pre-wrap">{m.content}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && <div className="text-green-500 text-[10px] md:text-xs animate-pulse flex items-center gap-2"><Radar size={14} className="animate-spin" /> Processing directive...</div>}
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-3 md:p-4 border-t border-green-900/50 bg-[#0A0A0A]">
+                  <div className="flex gap-2 md:gap-3 items-center">
+                    <span className="text-green-500 font-bold hidden md:inline">{'>'}</span>
+                    <input
+                      className="flex-1 bg-transparent text-white focus:outline-none placeholder-green-900/50 text-xs md:text-sm"
+                      value={input}
+                      placeholder="Enter command, Boss..."
+                      onChange={handleInputChange}
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={isLoading || !input}
+                      className="px-4 py-2 md:px-6 md:py-3 bg-green-900/30 border border-green-900 hover:bg-green-800 transition-colors rounded-xl text-green-400 font-bold text-[10px] md:text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      EXECUTE
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          )}
 
           {/* ================= 1. COMMAND CENTER (DASHBOARD) ================= */}
           {activeTab === 'FULL_DASHBOARD' && (
@@ -669,7 +767,7 @@ function AdminDashboard() {
               liveWatches={liveWatches}
               handleDeleteProduct={handleDeleteProduct}
               PremiumUploadNode={PremiumUploadNode}
-              setIsImageUploading={setIsImageUploading} // 🚀 Pass state handler to child
+              setIsImageUploading={setIsImageUploading} 
             />
           )}
 
