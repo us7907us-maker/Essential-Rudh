@@ -702,7 +702,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4"><HelpCircle size={24} className="text-[#D4AF37]"/></div>
                           <h4 className="font-serif font-black text-xl mb-2">Live Assistance</h4>
                           <p className="text-sm text-gray-500 mb-6">Our experts are available 24/7 for bespoke inquiries.</p>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => window.open('https://wa.me/917991458280', '_blank')} className="px-8 py-4 bg-black text-[#D4AF37] rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg w-full">Chat on WhatsApp</motion.button>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => window.open('https://wa.me/917770006632', '_blank')} className="px-8 py-4 bg-black text-[#D4AF37] rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg w-full">Chat on WhatsApp</motion.button>
                       </div>
                       <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 flex flex-col items-center text-center">
                           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4"><HelpCircle size={24} className="text-[#D4AF37]"/></div>
