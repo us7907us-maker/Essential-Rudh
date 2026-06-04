@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.80",
+    "@ai-sdk/google": "^1.0.0",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.10.0",
     "@react-three/drei": "^10.7.7",
