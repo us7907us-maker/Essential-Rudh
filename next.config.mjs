@@ -7,6 +7,7 @@ const nextConfig = {
     },
   },
   
+  
   // 🔥 YE NAYA BLOCK ADD KARNA HAI
   images: {
     remotePatterns: [
