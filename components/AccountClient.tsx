@@ -708,7 +708,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
                           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4"><HelpCircle size={24} className="text-[#D4AF37]"/></div>
                           <h4 className="font-serif font-black text-xl mb-2">Schedule a Call</h4>
                           <p className="text-sm text-gray-500 mb-6">Prefer speaking? Request a callback from our team.</p>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => notify("Callback request submitted. Our team will contact you shortly.")} className="px-8 py-4 border-2 border-black text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors w-full">Request Callback</motion.button>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => notify("Callback request submitted. Our team will contact you shortly.")}  className="px-8 py-4 border-2 border-black text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors w-full">Request Callback</motion.button>
                       </div>
                   </div>
 
@@ -723,10 +723,7 @@ export default function AccountClient({ initialData, session }: AccountClientPro
     q: "What are the shipping timelines?", 
     a: "We provide complimentary insured global shipping. Domestic deliveries take 2-4 business days, while international acquisitions take 5-10 business days." 
   },
-  { 
-    q: "Do you accept cryptocurrency?", 
-    a: "Yes, we accept Bitcoin and Ethereum for select high-value acquisitions. Please contact the concierge for the secure payment gateway link." 
-  },
+  
   { 
     q: "Do you provide a warranty?", 
     a: "Yes, all pre-owned and new timepieces come with a dedicated warranty period to ensure your peace of mind. Specific details are mentioned on the individual product pages." 
