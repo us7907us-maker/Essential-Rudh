@@ -807,51 +807,7 @@ function AdminDashboard() {
             />
           )}
 
-          {/* ================= 4. CUSTOMERS & CRM ================= */}
-          {activeTab === 'CRM' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="crm" className="bg-[#111] border border-white/10 rounded-[20px] md:rounded-[30px] overflow-hidden shadow-2xl w-full">
-              <div className="p-6 md:p-8 border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h3 className="text-xl md:text-2xl font-bold text-white">Client Roster</h3>
-                <span className="bg-[#D4AF37]/20 text-[#D4AF37] px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold">{leads.length} Identified</span>
-              </div>
-              <div className="overflow-x-auto w-full max-w-[100vw]">
-                <table className="w-full text-left min-w-[700px]">
-                  <thead className="bg-black/50 text-[10px] md:text-xs font-bold uppercase text-gray-400 border-b border-white/10">
-                    <tr>
-                      <th className="p-4 md:p-6 pl-6 md:pl-10">Client Identity</th>
-                      <th className="p-4 md:p-6 text-center">Access Vector</th>
-                      <th className="p-4 md:p-6 text-center">Store credit</th>
-                      <th className="p-4 md:p-6 text-right pr-6 md:pr-10">Portfolio Value</th>
-                      <th className="p-4 md:p-6 text-center pr-6 md:pr-10">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leads.length === 0 ? <tr><td colSpan={5} className="p-10 md:p-20 text-center text-gray-600 font-bold uppercase tracking-widest text-[10px] md:text-xs">Database Empty</td></tr> : leads.map((c: any, i: number) => (
-                      <tr key={i} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                        <td className="p-4 md:p-6 pl-6 md:pl-10">
-                          <div className="flex items-center gap-3 md:gap-4">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black border border-white/20 flex items-center justify-center text-xs md:text-sm font-bold text-white shrink-0">{c.phone?.slice(-2) || 'XX'}</div>
-                            <div className="overflow-hidden">
-                              <p className="font-bold text-white text-xs md:text-sm truncate">{c.phone || 'Anonymous'}</p>
-                              <p className="text-[10px] md:text-xs text-gray-500 mt-1 truncate">{c.email || `REF: ${c._id?.slice(-8)}`}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 md:p-6 text-center text-xs md:text-sm text-gray-300">{c.referralCode || 'Organic'}</td>
-                        <td className="p-4 md:p-6 text-center text-[#D4AF37] font-bold text-sm md:text-lg">₹{c.walletBalance || 0}</td>
-                        <td className="p-4 md:p-6 text-right pr-6 md:pr-10"><p className="font-bold text-base md:text-xl text-green-400">₹{(c.cartTotal || 0).toLocaleString()}</p></td>
-                        <td className="p-4 md:p-6 text-center pr-6 md:pr-10">
-                          <button onClick={() => handleDeleteLead(c._id)} className="p-3 min-h-[44px] min-w-[44px] flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all mx-auto">
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          )}
+      
 
           {/* ================= 5. COUPONS & MARKETING ================= */}
           {activeTab === 'MARKETING' && (
