@@ -6,18 +6,21 @@ import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
 
-const SeoKeywordSchema = new mongoose.Schema({
-  keyword: { type: String, required: true, unique: true },
-  searchVolume: { type: Number, default: 0 },
-  difficulty: { type: Number, default: 0 },
-  currentRank: Number,
-  targetRank: { type: Number, default: 1 },
-  status: { type: String, default: 'tracking' },
-  lastChecked: { type: Date, default: Date.now },
+const SeoPageSchema = new mongoose.Schema({
+  url: { type: String, required: true, unique: true },
+  title: String,
+  description: String,
+  keywords: [String],
+  h1: String,
+  contentLength: { type: Number, default: 0 },
+  mobileScore: Number,
+  desktopScore: Number,
+  status: { type: Number, default: 200 },
+  lastCrawled: { type: Date, default: Date.now },
   createdAt: { type: Date, default: Date.now }
 });
 
-const SeoKeyword = mongoose.models.SeoKeyword || mongoose.model('SeoKeyword', SeoKeywordSchema);
+const SeoPage = mongoose.models.SeoPage || mongoose.model('SeoPage', SeoPageSchema);
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,11 +29,11 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const keywords = await SeoKeyword.find({}).sort({ createdAt: -1 }).limit(100);
+    const pages = await SeoPage.find({}).sort({ createdAt: -1 }).limit(100);
 
     return NextResponse.json({
       success: true,
-      data: keywords
+      data: pages
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -47,24 +50,13 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const body = await req.json();
-    const { keyword, searchVolume, difficulty } = body;
-
-    const newKeyword = await SeoKeyword.create({
-      keyword,
-      searchVolume: searchVolume || 0,
-      difficulty: difficulty || 0,
-      status: 'tracking',
-      lastChecked: new Date()
-    });
+    const newPage = await SeoPage.create(body);
 
     return NextResponse.json({
       success: true,
-      data: newKeyword
+      data: newPage
     });
   } catch (error: any) {
-    if (error.code === 11000) {
-      return NextResponse.json({ error: 'Keyword already exists' }, { status: 400 });
-    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

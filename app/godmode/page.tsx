@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import SeoFullDashboard from '@/components/seo/seo-full-dashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 // 🚀 ADDED: useChat hook for J.A.R.V.I.S AI
 import { useChat } from 'ai/react';
@@ -967,10 +968,7 @@ function AdminDashboard() {
 
           {/* ================= 8. SEO ENGINE ================= */}
 {activeTab === 'SEO_ENGINE' && (
-  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="seo" className="bg-[#111] border border-white/10 rounded-[20px] p-6 md:p-10">
-    <h3 className="text-2xl font-bold text-[#D4AF37] mb-4">SEO Management</h3>
-    <p className="text-gray-400">SEO tools coming soon...</p>
-  </motion.div>
+  <SeoFullDashboard />
 )}
           {/* ================= 9. LEGAL PAGES ================= */}
           {activeTab === 'LEGAL_PAGES' && (
