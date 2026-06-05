@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SeoProject {
+  id               String       @id @default(uuid())
+  domain           String       @unique
+  healthScore      Int          @default(0)
+  totalIndexed     Int          @default(0)
+  crawlErrors      Int          @default(0)
+  organicTraffic   Int          @default(0)
+  authorityScore   Int          @default(0)
+  coreVitalsLcp    Float        @default(0.0)
+  coreVitalsFid    Float        @default(0.0)
+  coreVitalsCls    Float        @default(0.0)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  pages            SeoPage[]
+  keywords         Keyword[]
+  redirects        Redirect[]
+  tasks            SeoTask[]
+}
+
+model SeoPage {
+  id               String   @id @default(uuid())
+  projectId        String
+  urlSlug          String   @unique
+  metaTitle        String?
+  metaDescription  String?
+  h1               String?
+  canonicalUrl     String?
+  isNoindex        Boolean  @default(false)
+  isNofollow       Boolean  @default(false)
+  schemaJson       Json?
+  contentScore     Int      @default(0)
+  wordCount        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          SeoProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  keywords         PageKeyword[]
+}
+
+model Keyword {
+  id               String   @id @default(uuid())
+  projectId        String
+  term             String
+  cluster          String?
+  intent           String?  // INFORMATIONAL, NAVIGATIONAL, COMMERCIAL, TRANSACTIONAL
+  searchVolume     Int      @default(0)
+  difficulty       Int      @default(0)
+  cpc              Float    @default(0.0)
+  currentRank      Int?
+  previousRank     Int?
+  rankUrl          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          SeoProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pages            PageKeyword[]
+
+  @@unique([projectId, term])
+}
+
+model PageKeyword {
+  pageId           String
+  keywordId        String
+  isPrimary        Boolean  @default(false)
+
+  page             SeoPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  keyword          Keyword  @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@id([pageId, keywordId])
+}
+
+model Redirect {
+  id               String   @id @default(uuid())
+  projectId        String
+  sourceUrl        String
+  targetUrl        String
+  statusCode       Int      @default(301)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  project          SeoProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, sourceUrl])
+}
+
+model SeoTask {
+  id               String   @id @default(uuid())
+  projectId        String
+  title            String
+  description      String?
+  priority         String   @default("MEDIUM") // HIGH, MEDIUM, LOW
+  status           String   @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED
+  isAiGenerated    Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project          SeoProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
