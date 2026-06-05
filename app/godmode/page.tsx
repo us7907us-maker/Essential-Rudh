@@ -22,7 +22,6 @@ import { useRouter } from "next/navigation";
 import DashboardTab from '@/components/godmode/tabs_temp/DashboardTab';
 import InventoryTab from '@/components/godmode/tabs_temp/InventoryTab';
 import OrderTrackerTab from '@/components/godmode/tabs_temp/OrderTrackerTab';
-import SeoEngineTab from '@/components/godmode/tabs_temp/SeoEngineTab';
 import LegalPagesTab from '@/components/godmode/tabs_temp/LegalPagesTab';
 import ReviewsTab from '@/components/godmode/tabs_temp/ReviewsTab';
 import SalesForceTab from '@/components/godmode/tabs_temp/SalesForceTab';
@@ -967,10 +966,12 @@ function AdminDashboard() {
           )}
 
           {/* ================= 8. SEO ENGINE ================= */}
-          {activeTab === 'SEO_ENGINE' && (
-            <SeoEngineTab />
-          )}
-
+{activeTab === 'SEO_ENGINE' && (
+  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="seo" className="bg-[#111] border border-white/10 rounded-[20px] p-6 md:p-10">
+    <h3 className="text-2xl font-bold text-[#D4AF37] mb-4">SEO Management</h3>
+    <p className="text-gray-400">SEO tools coming soon...</p>
+  </motion.div>
+)}
           {/* ================= 9. LEGAL PAGES ================= */}
           {activeTab === 'LEGAL_PAGES' && (
             <LegalPagesTab

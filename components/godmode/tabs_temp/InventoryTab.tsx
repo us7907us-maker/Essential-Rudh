@@ -3,9 +3,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layout, X, Trash2, Save, ImageIcon, AlignJustify, ShieldCheck, Package } from 'lucide-react';
-import SeoPanel from './SeoPanel';
-import ImageSeoPanel from './ImageSeoPanel';
-
 interface InventoryProps {
     categories: string[];
     newCategory: string;
@@ -229,11 +226,7 @@ export default function Inventory({
                             </div>
                         </div>
 
-                        <div className="mt-8 pt-8 border-t border-white/10 space-y-8 w-full overflow-hidden">
-                            <SeoPanel entityData={watchForm} setEntityData={setWatchForm} />
-                            <ImageSeoPanel entityData={watchForm} setEntityData={setWatchForm} />
-                        </div>
-
+                        
                         <button onClick={handleSaveProduct} className="w-full py-5 min-h-[60px] bg-[#D4AF37] text-black font-black uppercase tracking-widest rounded-2xl hover:bg-white hover:scale-[1.02] transition-all duration-300 mt-6 flex justify-center items-center gap-3 text-xs md:text-sm shadow-[0_0_30px_rgba(212,175,55,0.3)]">
                             <Save size={20} /> Push to Live Inventory
                         </button>
