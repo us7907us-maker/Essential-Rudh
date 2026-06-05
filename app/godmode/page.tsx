@@ -35,7 +35,6 @@ const MODULES = [
   { id: 'FULL_DASHBOARD', icon: BarChart3, label: 'Main Dashboard' },
   { id: 'INVENTORY', icon: Package, label: 'Products & Inventory' },
   { id: 'ORDER_TRACKER', icon: Truck, label: 'Manage Orders' },
-  { id: 'CRM', icon: Users, label: 'Customers & CRM' },
   { id: 'MARKETING', icon: Gift, label: 'Coupons & Marketing' },
   { id: 'PAGE_BUILDER', icon: Layout, label: 'Website Builder' },
   { id: 'AMBASSADORS', icon: Award, label: 'Brand Ambassadors' },
