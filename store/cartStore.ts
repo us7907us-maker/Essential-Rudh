@@ -12,6 +12,7 @@ export interface Product {
   quantity?: number;
   qty?: number;
   imageUrl?: string;
+  image?: string; // 🚀 ADDED: Component compatibility ke liye
   images?: string[];
   brand?: string;
 }
@@ -28,12 +29,27 @@ interface CartState {
   setCartFromServer: (serverCart: Product[]) => void;
 }
 
-const normalizeItem = (item: any) => ({
-  ...item,
-  id: item._id || item.id,
-  price: Number(item.offerPrice || item.price || 0),
-  quantity: item.qty || item.quantity || 1,
-});
+// 🚀 THE ULTIMATE MASTER FIX: Bulletproof Normalizer
+// Ye UI ke har crash ko rokega, chahe data kahin se bhi aaye
+const normalizeItem = (item: any) => {
+  const resolvedId = item.id || item._id;
+  const resolvedPrice = Number(item.offerPrice || item.price || 0);
+  const resolvedQty = Number(item.quantity || item.qty || 1);
+  const resolvedImage = item.image || item.imageUrl || (item.images && item.images[0]) || '';
+  const resolvedName = item.name || item.title || 'Essential Timepiece';
+
+  return {
+    ...item,
+    id: resolvedId,
+    _id: resolvedId,
+    price: resolvedPrice,
+    quantity: resolvedQty,
+    qty: resolvedQty, // Double mapping taaki koi bhi UI component crash na ho
+    imageUrl: resolvedImage,
+    image: resolvedImage, // Double mapping for image formats
+    name: resolvedName,
+  };
+};
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -49,7 +65,7 @@ export const useCartStore = create<CartState>()(
         if (existingItem) {
           set({
             items: currentItems.map((i) =>
-              i.id === item.id ? { ...i, quantity: (i.quantity || 1) + (item.quantity || 1) } : i
+              i.id === item.id ? { ...i, quantity: (i.quantity || 1) + (item.quantity || 1), qty: (i.qty || 1) + (item.qty || 1) } : i
             ),
           });
         } else {
@@ -85,14 +101,11 @@ export const useCartStore = create<CartState>()(
 
       syncWithDb: async () => {
         try {
-          // 🛡️ API ko sirf tabhi call karo jab zarurat ho
           const res = await fetch('/api/cart/sync', { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
-            // 🚨 FIX 1: Backend ki demand ke hisaab se 'items' key bhejo
             body: JSON.stringify({ items: get().items }) 
           });
-          // Agar user login nahi hai (401), toh error throw mat karo, bas chupchap fail hone do
           if (!res.ok && res.status !== 401) {
              console.warn("Cart sync non-critical failure.");
           }
@@ -105,10 +118,10 @@ export const useCartStore = create<CartState>()(
         name: 'luxury_cart', 
         onRehydrateStorage: () => (state) => { 
             if (state) {
-                // 🚨 FIX 2: GHOST BUSTER - Corrupted/bina ID wale items ko yahi delete maar do
-                state.items = (state.items || []).filter(
-                  (item) => item && (item.id || item._id)
-                );
+                // 🚨 GHOST BUSTER: Bina ID wale corrupted items ko filter out karo
+                state.items = (state.items || [])
+                    .filter((item) => item && (item.id || item._id))
+                    .map(normalizeItem); // Ensure purane localstorage items bhi naye format mein aa jayein
                 state.setHasHydrated(true); 
             }
         } 

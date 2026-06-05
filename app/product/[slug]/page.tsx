@@ -2,15 +2,15 @@ import { Metadata } from "next";
 import mongoose from "mongoose";
 import ProductClientPage from "./ProductClientPage";
 import { Product } from "@/models/Product";
-import  connectDB  from "@/lib/mongodb"; // Aapka standard db connection import
+import connectDB from "@/lib/mongodb";
 
 // 🛡️ 1. DYNAMIC METADATA (SEO) - Next.js 15 Pattern
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>; // 🚨 Fixed: params is now a Promise
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params; // 🚨 Fixed: Must await params
+  const { slug } = await params;
 
   await connectDB();
 
@@ -19,7 +19,6 @@ export async function generateMetadata({
       ? { _id: slug }
       : { slug };
 
-    // Cast as any to avoid FlattenMaps type errors
     const product = await Product.findOne(query).lean() as any;
 
     if (!product) {
@@ -29,14 +28,8 @@ export async function generateMetadata({
       };
     }
 
-    const title = `${product.brand} ${
-      product.name || product.title
-    } | Essential Fine Horology`;
-
-    const description =
-      product.description?.slice(0, 160) ||
-      "Explore this curated luxury timepiece.";
-
+    const title = `${product.brand} ${product.name || product.title} | Essential Fine Horology`;
+    const description = product.description?.slice(0, 160) || "Explore this curated luxury timepiece.";
     const image = product.images?.[0] || product.imageUrl;
 
     return {
@@ -92,31 +85,14 @@ const JsonLdSchema = ({
       price: product.offerPrice || product.price,
       priceValidUntil: "2026-12-31",
       itemCondition: "https://schema.org/NewCondition",
-      availability:
-        product.stock > 0
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
+      availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       shippingDetails: {
         "@type": "OfferShippingDetails",
-        shippingRate: {
-          "@type": "MonetaryAmount",
-          value: "0",
-          currency: "INR"
-        },
+        shippingRate: { "@type": "MonetaryAmount", value: "0", currency: "INR" },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: "0",
-            maxValue: "1",
-            unitCode: "DAY"
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: "1",
-            maxValue: "3",
-            unitCode: "DAY"
-          }
+          handlingTime: { "@type": "QuantitativeValue", minValue: "0", maxValue: "1", unitCode: "DAY" },
+          transitTime: { "@type": "QuantitativeValue", minValue: "1", maxValue: "3", unitCode: "DAY" }
         }
       }
     },
@@ -126,47 +102,17 @@ const JsonLdSchema = ({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": baseUrl
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Shop",
-        "item": `${baseUrl}/shop`
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": product.brand,
-        "item": `${baseUrl}/shop?brand=${encodeURIComponent(product.brand)}`
-      },
-      {
-        "@type": "ListItem",
-        "position": 4,
-        "name": product.name,
-        "item": `${baseUrl}/product/${slug}`
-      }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": baseUrl },
+      { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${baseUrl}/shop` },
+      { "@type": "ListItem", "position": 3, "name": product.brand, "item": `${baseUrl}/shop?brand=${encodeURIComponent(product.brand)}` },
+      { "@type": "ListItem", "position": 4, "name": product.name, "item": `${baseUrl}/product/${slug}` }
     ]
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(schema),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
-        }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
     </>
   );
 };
@@ -175,55 +121,41 @@ const JsonLdSchema = ({
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ slug: string }>; // 🚨 Fixed: params is now a Promise
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params; // 🚨 Fixed: Must await params
+  const { slug } = await params;
 
   await connectDB();
 
   try {
-    const query = mongoose.Types.ObjectId.isValid(slug)
-      ? { _id: slug }
-      : { slug };
-
+    const query = mongoose.Types.ObjectId.isValid(slug) ? { _id: slug } : { slug };
     const productData = await Product.findOne(query).lean() as any;
 
     if (!productData) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[#050505] text-[#D4AF37] font-serif">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">
-              Timepiece Not Found
-            </h1>
-            <p className="text-gray-500 mb-8 italic">
-              The requested asset has left our vault or never existed.
-            </p>
-            <a
-              href="/shop"
-              className="text-xs font-black uppercase tracking-widest border-b border-[#D4AF37] pb-1"
-            >
-              Return to Collection
-            </a>
+            <h1 className="text-4xl font-bold mb-4">Timepiece Not Found</h1>
+            <p className="text-gray-500 mb-8 italic">The requested asset has left our vault or never existed.</p>
+            <a href="/shop" className="text-xs font-black uppercase tracking-widest border-b border-[#D4AF37] pb-1">Return to Collection</a>
           </div>
         </div>
       );
     }
 
-    // ✅ Serialize safely for client component
-    const serializedProduct = JSON.parse(
-      JSON.stringify(productData)
-    );
+    // ✅ THE MASTER FIX: Serialize safely AND force map `_id` to `id` for Cart compatibility
+    const serializedProduct = JSON.parse(JSON.stringify(productData));
+    serializedProduct.id = serializedProduct._id; 
 
     return (
       <>
         <JsonLdSchema product={serializedProduct} slug={slug} />
-// Props ke naam wahi rakho jo component mang raha hai
-return <ProductClientPage initialProduct={serializedProduct} slug={slug} />;     
- </>
+        {/* 🚨 FIX: Correct JSX Syntax for returning Client Component */}
+        <ProductClientPage initialProduct={serializedProduct} slug={slug} />
+      </>
     );
   } catch (error) {
     console.error("Product Page Error:", error);
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
         <p>Something went wrong. Please try again later.</p>
