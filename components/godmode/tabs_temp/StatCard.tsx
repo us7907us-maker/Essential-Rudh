@@ -8,27 +8,26 @@ interface StatCardProps {
     value: string;
     icon: React.ReactNode;
     trend: string;
-    color: string;
+    color?: string; // Optional now, since we hardcode dark theme
 }
 
-export default function StatCard({ title, value, icon, trend, color }: StatCardProps) {
+export default function StatCard({ title, value, icon, trend }: StatCardProps) {
     return (
-        <div className={`${color} p-10 rounded-[3rem] relative overflow-hidden group transition-all duration-500 hover:scale-[1.02]`}>
-            <div className="absolute -top-4 -right-4 p-10 opacity-[0.08] group-hover:opacity-20 group-hover:scale-125 group-hover:-rotate-12 transition-all duration-700 text-current">
+        <div className="bg-[#111] border border-white/10 hover:border-[#00F0FF]/50 p-6 md:p-8 rounded-[20px] md:rounded-[30px] relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+            <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-125 group-hover:-rotate-12 transition-all duration-700 text-white">
                 {icon}
             </div>
             <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">{title}</p>
-                    <span className="flex items-center gap-1 text-[9px] font-black bg-white/10 px-3 py-1 rounded-full text-green-400 border border-green-400/20 shadow-lg shadow-green-400/5">
+                <div className="flex justify-between items-start mb-6">
+                    <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">{title}</p>
+                    <span className="flex items-center gap-1 text-[8px] font-bold bg-green-500/10 px-2 py-1 rounded border border-green-500/20 text-green-400 tracking-wider">
                         <ArrowUpRight size={10} /> {trend}
                     </span>
                 </div>
-                <h3 className="text-4xl font-serif font-black italic tracking-tighter leading-none">{value}</h3>
+                <h3 className="text-3xl md:text-4xl font-mono font-bold tracking-tight text-white">{value}</h3>
             </div>
             
-            {/* Glassmorphism Shine Effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#00F0FF]/0 via-[#00F0FF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </div>
     );
 }
