@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layout, X, Trash2, Save, ImageIcon, AlignJustify, ShieldCheck, Tag, PlusCircle, Package } from 'lucide-react';
+import { Layout, X, Trash2, Save, ImageIcon, AlignJustify, ShieldCheck, Package } from 'lucide-react';
 import SeoPanel from './SeoPanel';
 import ImageSeoPanel from './ImageSeoPanel';
 
@@ -18,14 +18,10 @@ interface InventoryProps {
     handleDeleteProduct: (id: string) => void;
     PremiumUploadNode: React.ComponentType<{ placeholder?: string; onUploadSuccess: (url: string) => void; onUploadStateChange?: (state: boolean) => void }>;
     setIsImageUploading: (val: boolean) => void; 
-    handleSaveCMS?: () => void; // 🚀 ADDED: Connection to Database Save Function
+    handleSaveCMS?: () => void;
 }
 
 export default function Inventory({
-    categories,
-    newCategory,
-    setNewCategory,
-    setCategories,
     watchForm,
     setWatchForm,
     handleSaveProduct,
@@ -33,101 +29,15 @@ export default function Inventory({
     handleDeleteProduct,
     PremiumUploadNode,
     setIsImageUploading,
-    handleSaveCMS // 🚀 ADDED: Prop
 }: InventoryProps) {
-
-    const handleAddCategory = () => {
-        const trimmedCat = newCategory.trim();
-        if (!trimmedCat) return alert("Category name cannot be empty.");
-        if (categories.includes(trimmedCat)) return alert("Category already exists.");
-        
-        setCategories([...categories, trimmedCat]);
-        setNewCategory(""); 
-        
-        if (!watchForm.category) setWatchForm({ ...watchForm, category: trimmedCat });
-    };
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="inv" className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-5 space-y-8 h-max sticky top-0 w-full">
 
-                <div className="bg-[#111] p-6 md:p-8 rounded-[20px] md:rounded-[30px] border border-white/10 shadow-[0_10px_40px_rgba(212,175,55,0.05)]">
-                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
-                        <h3 className="text-white text-base md:text-lg font-bold flex items-center gap-2">
-                            <Layout size={18} className="text-[#D4AF37]" /> Manage Categories
-                        </h3>
-                        
-                        {/* 🚀 ADDED: Category Database Sync Controls */}
-                        <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full">
-                                {categories.length} Active
-                            </span>
-                            <button 
-                                onClick={() => {
-                                    if (handleSaveCMS) {
-                                        handleSaveCMS();
-                                    } else {
-                                        alert("Please pass handleSaveCMS from page.tsx");
-                                    }
-                                }}
-                                className="bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white hover:scale-105 transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]"
-                                title="Save changes permanently to Database"
-                            >
-                                <Save size={14} /> Sync DB
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2 md:gap-3 mb-6 relative group">
-                        <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#D4AF37] transition-colors" />
-                        <input 
-                            value={newCategory} 
-                            onChange={e => setNewCategory(e.target.value)} 
-                            onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
-                            className="flex-1 min-h-[48px] bg-black border border-white/20 pl-12 pr-4 rounded-xl text-xs md:text-sm text-white outline-none focus:border-[#D4AF37] transition-all" 
-                            placeholder="Type new category & press Enter..." 
-                        />
-                        <button 
-                            onClick={handleAddCategory} 
-                            disabled={!newCategory.trim()}
-                            className="px-6 min-h-[48px] bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                            <PlusCircle size={16} /> Add
-                        </button>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        <AnimatePresence>
-                            {categories.length === 0 ? (
-                                <p className="text-xs text-gray-500 italic font-serif w-full text-center py-4">No categories defined yet. Create one above to organize your vault.</p>
-                            ) : (
-                                categories.map((cat, i) => (
-                                    <motion.div 
-                                        initial={{ scale: 0.8, opacity: 0 }} 
-                                        animate={{ scale: 1, opacity: 1 }} 
-                                        exit={{ scale: 0.8, opacity: 0 }} 
-                                        key={cat} 
-                                        className="flex items-center gap-3 bg-black pl-4 pr-1 py-1 rounded-full border border-white/20 group hover:border-[#D4AF37]/50 transition-colors shadow-sm"
-                                    >
-                                        <span className="text-[10px] md:text-xs text-gray-300 font-bold uppercase tracking-wider">{cat}</span>
-                                        <button 
-                                            onClick={() => setCategories(categories.filter(c => c !== cat))} 
-                                            className="text-gray-500 hover:text-white bg-red-500/10 hover:bg-red-500 h-7 w-7 rounded-full flex items-center justify-center transition-all"
-                                            title="Delete Category"
-                                        >
-                                            <X size={12} />
-                                        </button>
-                                    </motion.div>
-                                ))
-                            )}
-                        </AnimatePresence>
-                    </div>
-                    
-                    <p className="text-[10px] text-gray-500 mt-4 text-center italic">
-                        *Remember to click <strong className="text-[#D4AF37]">SYNC DB</strong> after adding or deleting categories to save them permanently.
-                    </p>
-                </div>
-
+                {/* ========================================== */}
+                {/* 🛒 ADD PRODUCT FORM 🚀 */}
+                {/* ========================================== */}
                 <div className="bg-[#111] p-6 md:p-8 rounded-[20px] md:rounded-[30px] border border-white/10 shadow-lg relative overflow-hidden">
                     <h3 className="text-xl md:text-2xl font-bold text-white mb-6">Add a product</h3>
                     <div className="space-y-4 md:space-y-5 relative z-10">
@@ -141,18 +51,13 @@ export default function Inventory({
                                 placeholder="Brand Name"
                             />
                             
-                            <select
+                            {/* 🚀 FIX: Simple Text Input for Category (No Manager Needed) */}
+                            <input
                                 value={watchForm.category}
                                 onChange={(e) => setWatchForm({ ...watchForm, category: e.target.value })}
-                                className="w-full min-h-[48px] bg-black border border-white/20 p-4 rounded-xl text-xs md:text-sm outline-none focus:border-[#D4AF37] text-white appearance-none cursor-pointer"
-                            >
-                                <option value="" disabled>Select Category</option>
-                                {categories.length === 0 ? (
-                                    <option value="" disabled>No categories available</option>
-                                ) : (
-                                    categories.map(cat => <option key={cat} value={cat}>{cat}</option>)
-                                )}
-                            </select>
+                                className="w-full min-h-[48px] bg-black border border-white/20 p-4 rounded-xl text-xs md:text-sm outline-none focus:border-[#D4AF37] text-white"
+                                placeholder="Category (e.g. Rare Vintage)"
+                            />
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4">

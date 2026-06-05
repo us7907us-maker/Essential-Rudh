@@ -791,6 +791,7 @@ function AdminDashboard() {
               handleDeleteProduct={handleDeleteProduct}
               PremiumUploadNode={PremiumUploadNode}
               setIsImageUploading={setIsImageUploading} 
+              handleSaveCMS={handleSaveCMS} // 🚀 BAS YE EK LINE ADD KARNI HAI
             />
           )}
 
