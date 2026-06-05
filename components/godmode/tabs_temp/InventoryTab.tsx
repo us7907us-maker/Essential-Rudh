@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layout, X, Trash2, Save, ImageIcon, AlignJustify, ShieldCheck, Tag, PlusCircle ,Package} from 'lucide-react';
+import { Layout, X, Trash2, Save, ImageIcon, AlignJustify, ShieldCheck, Tag, PlusCircle, Package } from 'lucide-react';
 import SeoPanel from './SeoPanel';
 import ImageSeoPanel from './ImageSeoPanel';
 
@@ -18,6 +18,7 @@ interface InventoryProps {
     handleDeleteProduct: (id: string) => void;
     PremiumUploadNode: React.ComponentType<{ placeholder?: string; onUploadSuccess: (url: string) => void; onUploadStateChange?: (state: boolean) => void }>;
     setIsImageUploading: (val: boolean) => void; 
+    handleSaveCMS?: () => void; // 🚀 ADDED: Connection to Database Save Function
 }
 
 export default function Inventory({
@@ -32,18 +33,17 @@ export default function Inventory({
     handleDeleteProduct,
     PremiumUploadNode,
     setIsImageUploading,
+    handleSaveCMS // 🚀 ADDED: Prop
 }: InventoryProps) {
 
-    // 🚀 NEW: Enhanced Category Handler (Prevents duplicates & empty submissions)
     const handleAddCategory = () => {
         const trimmedCat = newCategory.trim();
         if (!trimmedCat) return alert("Category name cannot be empty.");
         if (categories.includes(trimmedCat)) return alert("Category already exists.");
         
         setCategories([...categories, trimmedCat]);
-        setNewCategory(""); // Clear input
+        setNewCategory(""); 
         
-        // Auto-select the newly created category in the form if none is selected
         if (!watchForm.category) setWatchForm({ ...watchForm, category: trimmedCat });
     };
 
@@ -51,17 +51,31 @@ export default function Inventory({
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key="inv" className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-5 space-y-8 h-max sticky top-0 w-full">
 
-                {/* ========================================== */}
-                {/* 🚀 ENHANCED CATEGORY MANAGEMENT SECTION 🚀 */}
-                {/* ========================================== */}
                 <div className="bg-[#111] p-6 md:p-8 rounded-[20px] md:rounded-[30px] border border-white/10 shadow-[0_10px_40px_rgba(212,175,55,0.05)]">
                     <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
                         <h3 className="text-white text-base md:text-lg font-bold flex items-center gap-2">
                             <Layout size={18} className="text-[#D4AF37]" /> Manage Categories
                         </h3>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full">
-                            {categories.length} Active
-                        </span>
+                        
+                        {/* 🚀 ADDED: Category Database Sync Controls */}
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full">
+                                {categories.length} Active
+                            </span>
+                            <button 
+                                onClick={() => {
+                                    if (handleSaveCMS) {
+                                        handleSaveCMS();
+                                    } else {
+                                        alert("Please pass handleSaveCMS from page.tsx");
+                                    }
+                                }}
+                                className="bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white hover:scale-105 transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                                title="Save changes permanently to Database"
+                            >
+                                <Save size={14} /> Sync DB
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex gap-2 md:gap-3 mb-6 relative group">
@@ -108,11 +122,12 @@ export default function Inventory({
                             )}
                         </AnimatePresence>
                     </div>
+                    
+                    <p className="text-[10px] text-gray-500 mt-4 text-center italic">
+                        *Remember to click <strong className="text-[#D4AF37]">SYNC DB</strong> after adding or deleting categories to save them permanently.
+                    </p>
                 </div>
 
-                {/* ========================================== */}
-                {/* 🛒 ADD PRODUCT FORM 🚀 */}
-                {/* ========================================== */}
                 <div className="bg-[#111] p-6 md:p-8 rounded-[20px] md:rounded-[30px] border border-white/10 shadow-lg relative overflow-hidden">
                     <h3 className="text-xl md:text-2xl font-bold text-white mb-6">Add a product</h3>
                     <div className="space-y-4 md:space-y-5 relative z-10">
@@ -126,7 +141,6 @@ export default function Inventory({
                                 placeholder="Brand Name"
                             />
                             
-                            {/* 🚀 FIX: Swapped Text Input to a Select Dropdown for Categories */}
                             <select
                                 value={watchForm.category}
                                 onChange={(e) => setWatchForm({ ...watchForm, category: e.target.value })}

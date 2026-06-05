@@ -26,19 +26,12 @@ import SeoEngineTab from '@/components/godmode/tabs_temp/SeoEngineTab';
 import LegalPagesTab from '@/components/godmode/tabs_temp/LegalPagesTab';
 import ReviewsTab from '@/components/godmode/tabs_temp/ReviewsTab';
 import SalesForceTab from '@/components/godmode/tabs_temp/SalesForceTab';
-import AiEngineTab from '@/components/godmode/tabs_temp/AiEngineTab';
 import SecurityTab from '@/components/godmode/tabs_temp/SecurityTab';
 import WithdrawalTab from '@/components/godmode/tabs_temp/WithdrawalTab';
-import StatCard from '@/components/godmode/tabs_temp/StatCard';
-import SeoPanel from '@/components/godmode/tabs_temp/SeoPanel';
-
-import SeoAnalyticsDashboard from '@/components/godmode/tabs_temp/SeoAnalyticsDashboard';
-import RedirectManager from '@/components/godmode/tabs_temp/RedirectManager';
-import ImageSeoPanel from '@/components/godmode/tabs_temp/ImageSeoPanel';
 
 const MODULES = [
-  // 🚀 ADDED: J.A.R.V.I.S. AI Terminal at the top
-  { id: 'GODMODE_AI', icon: Terminal, label: 'J.A.R.V.I.S. Terminal' },
+  // 🚀 MERGED: J.A.R.V.I.S. & AI Engine combined into one Ultimate Core
+  { id: 'GODMODE_AI', icon: BrainCircuit, label: 'J.A.R.V.I.S. Core' },
   { id: 'FULL_DASHBOARD', icon: BarChart3, label: 'Main Dashboard' },
   { id: 'INVENTORY', icon: Package, label: 'Products & Inventory' },
   { id: 'ORDER_TRACKER', icon: Truck, label: 'Manage Orders' },
@@ -51,7 +44,6 @@ const MODULES = [
   { id: 'REVIEWS', icon: Star, label: 'Customer Reviews' },
   { id: 'SALES_FORCE', icon: LinkIcon, label: 'Affiliates & Partners' },
   { id: 'WITHDRAWALS', icon: Landmark, label: 'Withdrawal Requests' },
-  { id: 'AI_ENGINE', icon: Zap, label: 'Smart Pricing AI' },
   { id: 'SECURITY', icon: ShieldAlert, label: 'Security & Maintenance' }
 ];
 
@@ -114,7 +106,7 @@ function AdminDashboard() {
       {
         id: '1',
         role: 'assistant',
-        content: 'System Online. Welcome back, Boss. Essential Rush Godmode activated. What updates do you need today?',
+        content: 'System Online. Welcome back, Boss. Essential Rush AI Core activated. I am ready to monitor systems, adjust algorithmic pricing, and execute your commands.',
       },
     ],
   });
@@ -482,11 +474,25 @@ function AdminDashboard() {
     document.body.removeChild(link);
   };
 
+  // ✅ LOCAL STORAGE CATEGORY SYNC EFFECT
+  useEffect(() => {
+    const savedCategories = localStorage.getItem('essential_categories');
+    if (savedCategories) {
+      setCategories(JSON.parse(savedCategories));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      localStorage.setItem('essential_categories', JSON.stringify(categories));
+    }
+  }, [categories]);
+
   if (status === "loading") return <div className="h-screen bg-[#050505] flex items-center justify-center"><div className="text-[#D4AF37] animate-pulse font-mono flex flex-col items-center gap-4"><Activity size={40} /><p className="tracking-[5px] text-xs font-bold">AUTHENTICATING...</p></div></div>;
   if (!session || session.user?.role !== 'SUPER_ADMIN') return <div className="h-screen bg-[#050505] flex flex-col items-center justify-center relative overflow-hidden"><div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div><Lock size={60} className="text-red-500 mb-8 animate-pulse relative z-10" /><button onClick={() => signIn("google")} className="relative z-10 bg-[#D4AF37] text-black px-12 py-5 rounded-full font-bold tracking-widest uppercase shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:bg-white hover:shadow-[#D4AF37] transition-all hover:scale-105">Admin sign in</button></div>;
 
   return (
-    <div className="flex h-screen bg-[#050505] text-white overflow-hidden selection:bg-[#D4AF37] selection:text-black relative font-sans w-full max-w-[100vw]">
+    <div className="flex h-screen bg-[#050505] text-white overflow-hidden selection:bg-[#00F0FF] selection:text-black relative font-sans w-full max-w-[100vw]">
 
       {/* ORDER DETAILS MODAL */}
       <AnimatePresence>
@@ -573,8 +579,8 @@ function AdminDashboard() {
 
       {/* BACKGROUND */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0"></div>
-      <div className="fixed top-0 right-0 w-[800px] h-[800px] bg-[#D4AF37]/[0.05] blur-[150px] rounded-full pointer-events-none z-0"></div>
-      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-[#00F0FF]/[0.03] blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="fixed top-0 right-0 w-[800px] h-[800px] bg-[#00F0FF]/[0.05] blur-[150px] rounded-full pointer-events-none z-0"></div>
+      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-[#D4AF37]/[0.03] blur-[120px] rounded-full pointer-events-none z-0"></div>
 
       {/* AFFILIATE MODAL */}
       <AnimatePresence>
@@ -603,7 +609,7 @@ function AdminDashboard() {
 
       <aside className="hidden lg:flex w-[300px] bg-black/60 backdrop-blur-2xl border-r border-white/10 flex-col z-50 relative">
         <div className="p-8 border-b border-white/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37]">
+          <div className="w-10 h-10 rounded-xl bg-[#00F0FF]/20 border border-[#00F0FF]/50 flex items-center justify-center text-[#00F0FF]">
             <ShieldCheck size={20} />
           </div>
           <div className="overflow-hidden">
@@ -614,9 +620,9 @@ function AdminDashboard() {
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
           {MODULES.map(m => (
-            <button key={m.id} onClick={() => setActiveTab(m.id)} className={`w-full flex items-center justify-between px-4 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group ${activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'bg-green-900/30 border border-green-500/50 text-green-400' : 'bg-[#D4AF37] text-black') : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
+            <button key={m.id} onClick={() => setActiveTab(m.id)} className={`w-full flex items-center justify-between px-4 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all group ${activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'bg-[#00F0FF]/20 border border-[#00F0FF]/50 text-[#00F0FF]' : 'bg-[#D4AF37] text-black') : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
               <div className="flex items-center gap-3">
-                <m.icon size={16} className={activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'text-green-400 animate-pulse' : 'text-black') : 'group-hover:text-white transition-colors'} />
+                <m.icon size={16} className={activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'text-[#00F0FF] animate-pulse' : 'text-black') : 'group-hover:text-white transition-colors'} />
                 {m.label}
               </div>
               {activeTab === m.id && <ChevronRight size={14} />}
@@ -636,10 +642,10 @@ function AdminDashboard() {
             <button
               key={m.id}
               onClick={() => setActiveTab(m.id)}
-              className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all min-h-[44px] ${activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'bg-green-900/30 border border-green-500 text-green-400' : 'bg-[#D4AF37] text-black shadow-lg') : 'bg-white/5 text-gray-400 border border-white/10'
+              className={`shrink-0 snap-start flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all min-h-[44px] ${activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'bg-[#00F0FF]/20 border border-[#00F0FF]/50 text-[#00F0FF]' : 'bg-[#D4AF37] text-black shadow-lg') : 'bg-white/5 text-gray-400 border border-white/10'
                 }`}
             >
-              <m.icon size={14} className={activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'text-green-400' : 'text-black') : 'text-[#D4AF37]'} />
+              <m.icon size={14} className={activeTab === m.id ? (m.id === 'GODMODE_AI' ? 'text-[#00F0FF]' : 'text-black') : 'text-[#D4AF37]'} />
               {m.label}
             </button>
           ))}
@@ -647,7 +653,7 @@ function AdminDashboard() {
 
         <header className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-10 border-b border-white/10 pb-6 gap-4">
           <div>
-            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-serif ${activeTab === 'GODMODE_AI' ? 'text-green-500 font-mono tracking-widest uppercase' : 'text-white'}`}>
+            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-serif ${activeTab === 'GODMODE_AI' ? 'text-[#00F0FF] font-mono tracking-widest uppercase' : 'text-white'}`}>
               {MODULES.find(m => m.id === activeTab)?.label}
             </h2>
           </div>
@@ -656,7 +662,7 @@ function AdminDashboard() {
               <BellRing size={18} className="text-gray-400 mx-auto" />
               {leads.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold">{leads.length}</span>}
             </button>
-            <button onClick={() => fetchDashboardData(false)} className="flex-[3] lg:flex-none justify-center px-5 py-4 min-h-[44px] bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-xl hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+            <button onClick={() => fetchDashboardData(false)} className={`flex-[3] lg:flex-none justify-center px-5 py-4 min-h-[44px] border rounded-xl transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest ${activeTab === 'GODMODE_AI' ? 'bg-[#00F0FF]/10 border-[#00F0FF]/30 hover:bg-[#00F0FF] text-[#00F0FF] hover:text-black' : 'bg-[#D4AF37]/10 border-[#D4AF37]/30 hover:bg-[#D4AF37] text-[#D4AF37] hover:text-black'}`}>
               <RefreshCcw size={16} className={isSyncing ? "animate-spin" : ""} /> Sync Data
             </button>
           </div>
@@ -664,37 +670,54 @@ function AdminDashboard() {
 
         <AnimatePresence mode="wait">
 
-          {/* ================= 0. J.A.R.V.I.S. TERMINAL ================= */}
+          {/* ================= 0. J.A.R.V.I.S. CORE (COMBINED AI DASHBOARD) ================= */}
           {activeTab === 'GODMODE_AI' && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} key="jarvis" className="flex flex-col xl:flex-row gap-6 w-full">
-              {/* LEFT PANEL - SITE STATS */}
-              <div className="w-full xl:w-1/3 bg-[#0a0a0a] border border-green-900/50 rounded-[20px] p-6 shadow-[0_0_15px_rgba(0,255,0,0.05)] h-max">
-                <h1 className="text-xl md:text-2xl font-bold text-white mb-6 tracking-widest border-b border-green-900/50 pb-4">
-                  GODMODE <span className="text-xs text-green-500 align-top font-mono">v1.0</span>
-                </h1>
-                <div className="space-y-4 font-mono">
-                  <div className="bg-black p-4 rounded-xl border border-green-900/30">
-                    <p className="text-gray-500 text-[10px] uppercase tracking-widest">LIVE VISITORS</p>
-                    <p className="text-3xl text-white">124</p>
-                  </div>
-                  <div className="bg-black p-4 rounded-xl border border-green-900/30">
-                    <p className="text-gray-500 text-[10px] uppercase tracking-widest">IDENTIFIED CLIENTS</p>
-                    <p className="text-3xl text-white">{leads.length}</p>
-                  </div>
-                  <div className="bg-black p-4 rounded-xl border border-green-900/30">
-                    <p className="text-gray-500 text-[10px] uppercase tracking-widest">SYSTEM STATUS</p>
-                    <p className="text-sm md:text-lg text-green-400 flex items-center gap-2"><Activity size={16} className="animate-pulse shrink-0" /> All Systems Nominal</p>
-                  </div>
-                </div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} key="jarvis" className="flex flex-col xl:flex-row gap-6 md:gap-8 w-full">
+              
+              {/* LEFT PANEL - AI PRICING CONTROLS */}
+              <div className="w-full xl:w-5/12 space-y-6 md:space-y-8">
+                 <div className="text-center md:text-left mb-6 bg-[#0a0a0a] border border-[#00F0FF]/20 rounded-[20px] p-6 shadow-[0_0_15px_rgba(0,240,255,0.05)]">
+                     <BrainCircuit size={40} className="w-12 h-12 text-[#00F0FF] mx-auto md:mx-0 mb-4 animate-pulse"/>
+                     <h2 className="text-xl md:text-2xl font-bold text-white mb-2 font-mono tracking-widest uppercase">Algorithmic Valuation</h2>
+                     <p className="text-gray-400 text-[10px] md:text-xs tracking-widest uppercase">Dynamic fluctuation based on market velocity.</p>
+                 </div>
+
+                 <div className="bg-[#111] p-6 md:p-8 rounded-[20px] md:rounded-[30px] border border-[#00F0FF]/30 space-y-6 shadow-[0_0_50px_rgba(0,240,255,0.05)] w-full">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/10 pb-4 gap-4">
+                       <div>
+                          <h4 className="text-sm md:text-base font-bold text-white uppercase tracking-widest">Deep Learning</h4>
+                          <p className="text-[9px] md:text-[10px] text-gray-500 mt-1 uppercase">Automatic price recalibration for limited stock.</p>
+                       </div>
+                       <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                          <span className={`text-[10px] md:text-xs font-bold uppercase tracking-widest ${pricingRules.isAiPricingActive ? 'text-[#00F0FF]' : 'text-gray-600'}`}>{pricingRules.isAiPricingActive ? 'ONLINE' : 'OFFLINE'}</span>
+                          <button onClick={() => setPricingRules({...pricingRules, isAiPricingActive: !pricingRules.isAiPricingActive})} className={`w-14 min-h-[28px] md:h-7 rounded-full p-1 transition-colors ${pricingRules.isAiPricingActive ? 'bg-[#00F0FF]' : 'bg-gray-800'}`}>
+                              <div className={`w-5 h-5 bg-white rounded-full transition-transform ${pricingRules.isAiPricingActive ? 'translate-x-7' : 'translate-x-0'}`}></div>
+                          </button>
+                       </div>
+                    </div>
+
+                    <div>
+                       <div className="flex justify-between items-end mb-4">
+                          <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Absolute Price Ceiling</label>
+                          <span className="text-lg md:text-xl font-mono text-[#00F0FF]">{pricingRules.maxMarkupPercent}%</span>
+                       </div>
+                       <input type="range" min="0" max="50" value={pricingRules.maxMarkupPercent} onChange={(e) => setPricingRules({...pricingRules, maxMarkupPercent: Number(e.target.value)})} className="w-full h-2 min-h-[44px] md:min-h-auto bg-transparent md:bg-gray-800 rounded-full appearance-none cursor-pointer" style={{accentColor: '#00F0FF'}} />
+                       <p className="text-[9px] md:text-[10px] text-gray-600 mt-0 md:mt-4 uppercase tracking-widest">Restricts maximum allowable deviation.</p>
+                    </div>
+
+                    <button onClick={handleSaveAIRules} className="w-full min-h-[44px] py-4 bg-[#00F0FF] text-black font-bold uppercase tracking-widest rounded-xl text-[10px] md:text-xs hover:bg-white transition-all mt-4 shadow-[0_0_30px_rgba(0,240,255,0.2)] flex justify-center items-center gap-2">
+                       <Cpu size={14} /> Compile Algorithm
+                    </button>
+                 </div>
               </div>
 
-              {/* RIGHT PANEL - AI TERMINAL */}
-              <div className="w-full xl:w-2/3 bg-[#0a0a0a] border border-green-900/50 rounded-[20px] flex flex-col h-[70vh] min-h-[500px] shadow-[0_0_20px_rgba(0,255,0,0.1)] overflow-hidden font-mono">
-                <div className="bg-green-900/20 p-4 border-b border-green-900/50 flex items-center justify-between">
-                  <span className="text-[10px] md:text-xs tracking-widest text-green-500 font-bold flex items-center gap-2"><Terminal size={16} /> AI ASSISTANT TERMINAL</span>
+              {/* RIGHT PANEL - J.A.R.V.I.S. TERMINAL */}
+              <div className="w-full xl:w-7/12 bg-[#0a0a0a] border border-[#00F0FF]/30 rounded-[20px] md:rounded-[30px] flex flex-col h-[600px] md:h-[750px] shadow-[0_0_30px_rgba(0,240,255,0.1)] overflow-hidden font-mono">
+                <div className="bg-[#00F0FF]/10 p-4 border-b border-[#00F0FF]/30 flex items-center justify-between">
+                  <span className="text-[10px] md:text-xs tracking-widest text-[#00F0FF] font-bold flex items-center gap-2"><Terminal size={16} /> CORE TERMINAL: J.A.R.V.I.S.</span>
                   <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F0FF] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00F0FF]"></span>
                   </span>
                 </div>
 
@@ -703,33 +726,33 @@ function AdminDashboard() {
                     <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[90%] md:max-w-[85%] p-4 rounded-xl text-xs md:text-sm leading-relaxed ${
                         m.role === 'user' 
-                          ? 'bg-green-900/30 border border-green-700/50 text-white' 
-                          : 'bg-black/80 border border-green-900/50 text-green-400 shadow-[0_0_10px_rgba(0,255,0,0.05)]'
+                          ? 'bg-[#00F0FF]/20 border border-[#00F0FF]/50 text-white' 
+                          : 'bg-[#111] border border-[#00F0FF]/30 text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.05)]'
                       }`}>
-<span className="text-[9px] md:text-[10px] tracking-widest uppercase opacity-50 mb-2 font-bold flex items-center gap-2">   
-                         {m.role === 'user' ? <Fingerprint size={12}/> : <Cpu size={12}/>}
-                          {m.role === 'user' ? 'Boss' : 'J.A.R.V.I.S.'}
+                        <span className="text-[9px] md:text-[10px] tracking-widest uppercase opacity-50 mb-2 font-bold flex items-center gap-2">   
+                           {m.role === 'user' ? <Fingerprint size={12}/> : <Cpu size={12}/>}
+                           {m.role === 'user' ? 'Boss' : 'J.A.R.V.I.S.'}
                         </span>
                         <div className="whitespace-pre-wrap">{m.content}</div>
                       </div>
                     </div>
                   ))}
-                  {isLoading && <div className="text-green-500 text-[10px] md:text-xs animate-pulse flex items-center gap-2"><Radar size={14} className="animate-spin" /> Processing directive...</div>}
+                  {isLoading && <div className="text-[#00F0FF] text-[10px] md:text-xs animate-pulse flex items-center gap-2"><Radar size={14} className="animate-spin" /> Processing directive...</div>}
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-3 md:p-4 border-t border-green-900/50 bg-[#0A0A0A]">
-                  <div className="flex gap-2 md:gap-3 items-center">
-                    <span className="text-green-500 font-bold hidden md:inline">{'>'}</span>
+                <form onSubmit={handleSubmit} className="p-3 md:p-4 border-t border-[#00F0FF]/30 bg-[#0A0A0A]">
+                  <div className="flex gap-2 md:gap-3 items-center bg-[#111] border border-white/10 rounded-xl p-2 focus-within:border-[#00F0FF] transition-colors">
+                    <span className="text-[#00F0FF] font-bold pl-2 hidden md:inline">{'>'}</span>
                     <input
-                      className="flex-1 bg-transparent text-white focus:outline-none placeholder-green-900/50 text-xs md:text-sm"
+                      className="flex-1 bg-transparent text-white focus:outline-none placeholder-gray-600 text-xs md:text-sm px-2 py-2"
                       value={input}
-                      placeholder="Enter command, Boss..."
+                      placeholder="Ask J.A.R.V.I.S to update prices, fetch stats..."
                       onChange={handleInputChange}
                     />
                     <button 
                       type="submit" 
                       disabled={isLoading || !input}
-                      className="px-4 py-2 md:px-6 md:py-3 bg-green-900/30 border border-green-900 hover:bg-green-800 transition-colors rounded-xl text-green-400 font-bold text-[10px] md:text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 py-2 md:px-6 md:py-2 min-h-[36px] bg-[#00F0FF]/20 border border-[#00F0FF]/50 hover:bg-[#00F0FF] transition-colors rounded-lg text-[#00F0FF] hover:text-black font-bold text-[10px] uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       EXECUTE
                     </button>
@@ -1027,21 +1050,12 @@ function AdminDashboard() {
             />
           )}
 
-          {/* ================= 12. AI PRICING ================= */}
-          {activeTab === 'AI_ENGINE' && (
-            <AiEngineTab
-              pricingRules={pricingRules}
-              setPricingRules={setPricingRules}
-              handleSaveAIRules={handleSaveAIRules}
-            />
-          )}
-
-          {/* ================= 13. SECURITY ================= */}
+          {/* ================= 12. SECURITY ================= */}
           {activeTab === 'SECURITY' && (
             <SecurityTab />
           )}
 
-          {/* ================= 14. WITHDRAWALS ================= */}
+          {/* ================= 13. WITHDRAWALS ================= */}
           {activeTab === 'WITHDRAWALS' && (
             <WithdrawalTab />
           )}
