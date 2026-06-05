@@ -1,48 +1,39 @@
-import { jwtVerify, SignJWT, JWTPayload } from "jose";
-import { NextRequest } from "next/server";
+import { jwtVerify } from 'jose';
+import { NextRequest } from 'next/server';
 
-const secret = process.env.NEXTAUTH_SECRET;
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || 'super-secret-key-change-in-production'
+);
 
-if (!secret) {
-  throw new Error("NEXTAUTH_SECRET is not defined");
-}
-
-const JWT_SECRET = new TextEncoder().encode(secret);
-
-export interface AuthPayload extends JWTPayload {
-  id?: string;
-  email?: string;
-  role?: string;
-}
-
-export async function verifyAuth(
-  req: NextRequest
-): Promise<AuthPayload | null> {
+export async function verifyAuth(req: NextRequest) {
   try {
-    const token =
-      req.cookies.get("next-auth.session-token")?.value ||
-      req.cookies.get("__Secure-next-auth.session-token")?.value ||
-      req.headers.get("authorization")?.replace("Bearer ", "");
+    // Get token from multiple sources
+    const token = 
+      req.cookies.get('next-auth.session-token')?.value ||
+      req.cookies.get('__Secure-next-auth.session-token')?.value ||
+      req.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return null;
     }
 
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-
-    return payload as AuthPayload;
+    // Verify the JWT token
+    const verified = await jwtVerify(token, JWT_SECRET);
+    return verified.payload;
   } catch (error) {
-    console.error("Auth verification failed:", error);
+    console.error('Auth verification failed:', error);
     return null;
   }
 }
 
-export async function generateToken(
-  payload: AuthPayload
-): Promise<string> {
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(JWT_SECRET);
+export function getAuthSession(req: NextRequest) {
+  try {
+    const token = 
+      req.cookies.get('next-auth.session-token')?.value ||
+      req.cookies.get('__Secure-next-auth.session-token')?.value;
+
+    return token ? { authenticated: true, token } : null;
+  } catch (error) {
+    return null;
+  }
 }
